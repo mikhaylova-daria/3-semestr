@@ -1,6 +1,8 @@
 #ifndef IMPLEMENTATION_GRAPH_H
 #define IMPLEMENTATION_GRAPH_H
 
+#include <queue>
+
 template <typename V, typename E>
 bool operator < (std::weak_ptr<vertex<V, E> > ptr, std::weak_ptr<vertex<V, E> > other_ptr){
     return (ptr.lock())->name < (other_ptr.lock())->name;
@@ -36,23 +38,6 @@ std::weak_ptr<vertex<V, E> > graph<V,E>::add_vertex(V name) {
     return adding_vertex_ptr;
 }
 
-//template <typename V, typename E>
-//void graph<V, E>::add_vertex(const vertex<V>& v)
-//{
-//    if (this->vertices.find(v.name) != this->vertices.end()) {
-//        std::shared_ptr<vertex<V> > v_ptr(new vertex<V>(v.name));
-//        this->vertices.insert(std::pair<V, std::shared_ptr<vertex<V> > >(v.name, v_ptr));
-//    }
-//}
-
-//template <typename V, typename E>
-//void graph<V, E>::add_edge(V vertex_start_name, V vertex_finish_name, E weight)
-//{
-//    vertex<V, E> v_s = new vertex<V, E> (vertex_start_name);
-//    vertex<V, E> v_f = new vertex<V, E> (vertex_finish_name);
-//    return v_s;
-//}
-
 template <typename V, typename E>
 void graph<V, E>::add_edge(V vertex_start_name, V vertex_finish_name, E weight) {
     std::weak_ptr<vertex<V, E> > st_ptr;
@@ -65,5 +50,8 @@ void graph<V, E>::add_edge(V vertex_start_name, V vertex_finish_name, E weight) 
     f_ptr.lock()->edges_to.push_back(edg_2);
     return;
 }
+
+
+
 
 #endif // IMPLEMENTATION_GRAPH_H
