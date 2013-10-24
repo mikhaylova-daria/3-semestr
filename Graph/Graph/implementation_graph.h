@@ -51,6 +51,16 @@ void graph<V, E>::add_edge(V vertex_start_name, V vertex_finish_name, E weight) 
     return;
 }
 
+template <typename V, typename E>
+typename graph<V, E>::iteratorBFS graph<V, E>::begin() {
+    return iteratorBFS(this, (*(this->vertices.begin())).first);
+}
+
+template <typename V, typename E>
+typename graph<V, E>::iteratorBFS graph<V, E>::end() {
+    iteratorBFS itr;
+    return itr;
+}
 
 
 

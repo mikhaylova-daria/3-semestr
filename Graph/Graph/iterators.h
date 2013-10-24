@@ -13,14 +13,19 @@ class graph<V, E>::iteratorBFS {
     std::weak_ptr<vertex<V, E> > current;
     const graph<V, E>* g;
     int number_of_black = 0;
+    std::shared_ptr<vertex<V, E> > my_null;
 
 public:
     friend class graph<V, E>;
-    iteratorBFS() {;}
+    iteratorBFS() {
+    }
+    ~iteratorBFS() {
+    }
 
 private:
     iteratorBFS(const graph<V, E> *G, V start_name) {
         g = G;
+        my_null = std::shared_ptr<vertex<V, E> >(new vertex<V, E>());
         std::weak_ptr <vertex<V, E> > start = G->vertices.find(start_name)->second;
         BFS_vertex_characterization description;
         description.color = 0;
@@ -38,32 +43,31 @@ private:
 public:
     iteratorBFS& operator++() {
         if (!gray.empty()) {
+            if (number_of_black > 0) {
+                status.erase(current.lock()->name);
+            }
             current = gray.front();
             gray.pop();
             typename std::list<std::pair<std::weak_ptr <vertex<V, E> >, E> >::const_iterator itr_adj;
             for (itr_adj = current.lock()->edges_from.cbegin(); itr_adj != current.lock()->edges_from.cend(); ++itr_adj) {
-                BFS_vertex_characterization status_of_current;
-                status_of_current = status.find((*itr_adj).first.lock()->name)->second;
-                if (status_of_current.color == 0) {
-                    status_of_current.color = 1;
-                    status_of_current.parent = current;
-                    gray.push(itr_adj->first);
+                typename std::unordered_map<V,  BFS_vertex_characterization>::iterator itr_st = status.find((*itr_adj).first.lock()->name);
+                if (itr_st != status.end()) {
+                    BFS_vertex_characterization status_of_current;
+                    status_of_current = itr_st->second;
+                    if (status_of_current.color == 0) {
+                        status_of_current.color = 1;
+                        status_of_current.parent = current;
+                        gray.push(itr_adj->first);
+                    }
                 }
             }
-            status.find(current.lock()->name)->second.color = 2;
             ++number_of_black;
         } else {
-            if (number_of_black != g->vertices.size()) {
-                typename std::unordered_map<V, BFS_vertex_characterization>::iterator itr_st = status.begin();
-                while (itr_st->second.color != 0) {
-                    ++itr_st;
-                }
-                itr_st->second.color = 1;
-                std::weak_ptr<vertex<V, E> >new_working_vertex = g->vertices.find(itr_st->first)->second;
+            if (!status.empty()) {
+                std::weak_ptr<vertex<V, E> >new_working_vertex = g->vertices.find(status.begin()->first)->second;
+                status.begin()->second.color = 1;
                 gray.push(new_working_vertex);
                 this->operator++();
-            } else {
-                status.clear();
             }
         }
         return *this;
