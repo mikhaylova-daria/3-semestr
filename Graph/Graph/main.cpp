@@ -20,11 +20,22 @@ int main() {
     a.add_edge('x', 'u', 0);
     a.add_edge('x', 'y', 0);
     a.add_edge('y', 'u', 0);
-
-    graph<char, int>::iteratorBFS itr = a.begin();
-    for (itr = a.begin(); itr != a.end(); ++itr) {
-        std::cout << itr->name<<std::endl;
+    try {
+        a.remove_vertex('r');
+    } catch (my::exception e) {
+        std::cout<<e.what()<<std::endl;
     }
-    // a.print();
+
+    try {
+        a.remove_edge('s', 'v');
+    } catch (my::exception e) {
+        std::cout<<e.what()<<std::endl;
+    }
+
+//    graph<char, int>::iteratorBFS itr = a.begin();
+//    for (itr = a.begin(); itr != a.end(); ++itr) {
+//        std::cout << itr->name<<std::endl;
+//    }
+     a.print();
     return 0;
 }

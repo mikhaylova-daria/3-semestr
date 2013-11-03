@@ -9,5 +9,5 @@ SOURCES += main.cpp
 HEADERS += \
     graph.h \
     implementation_graph.h \
-    iterators.h
+    iteratorBFS.h
 
