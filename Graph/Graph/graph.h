@@ -67,10 +67,11 @@ public:
     void add_edge(V vertex_start_name, V vertex_finish_name, E weight);
     void remove_vertex(V name) throw (my::exception);
     void remove_edge(V vertex_start_name, V vertex_finish_name) throw (my::exception);
-    iteratorBFS BFSbegin() const;
-    iteratorBFS BFSend() const;
-    iteratorDFS DFSbegin() const;
-    iteratorDFS DFSend() const;
+    iteratorBFS BFSbegin();
+    iteratorBFS BFSend();
+    iteratorDFS DFSbegin();
+    iteratorDFS DFSend();
+    iteratorDFS DFSstart();
     void print () const {
         std::cout<<"name_start - name_finish : weight\n";
         typename std::unordered_map<V, std::shared_ptr<vertex<V, E> > >::const_iterator itr;

@@ -84,23 +84,46 @@ public:
                         current = itr_st->second.ptr;
                     }
                 } else {
-                    itr_st->second.color = 2;
-                    itr_st->second.finish = number_of_visit;
-                    ++number_of_visit;
-                    discovered.pop();
-                    unfinished.erase(itr_st->first);
-                    current = itr_st->second.ptr;
+                    if (!unfinished.empty()) {
+                        itr_st->second.color = 2;
+                        itr_st->second.finish = number_of_visit;
+                        ++number_of_visit;
+                        discovered.pop();
+                        unfinished.erase(itr_st->first);
+                        current = itr_st->second.ptr;
+                    } else {
+                        current = g->my_null;
+                    }
                 }
             }
         } else {
-            typename std::unordered_map<V, DFS_vertex_characterization>::iterator itr_status;
-            itr_status = status.find(*unfinished.begin());
-            itr_status->second.color = 1;
-            itr_status->second.discover = number_of_visit;
-            itr_status->second.parent = current;
-            ++number_of_visit;
-            discovered.push(itr_status->second.ptr);
-            current = itr_status->second.ptr;
+            if (!unfinished.empty()) {
+                typename std::unordered_map<V, DFS_vertex_characterization>::iterator itr_status;
+                itr_status = status.find(*unfinished.begin());
+                itr_status->second.color = 1;
+                itr_status->second.discover = number_of_visit;
+                itr_status->second.parent = current;
+                ++number_of_visit;
+                discovered.push(itr_status->second.ptr);
+                current = itr_status->second.ptr;
+            } else {
+                current =g->my_null;
+            }
+        }
+        return *this;
+    }
+
+    iteratorDFS& begin() {
+        while(this->get_color_DFS() != 2) {
+            inc();
+        }
+        return *this;
+    }
+
+    iteratorDFS& operator++() {
+        inc();
+        while(this->get_color_DFS() != 2) {
+            inc();
         }
         return *this;
     }
@@ -119,21 +142,36 @@ public:
         return itr_st->second.color;
     }
 
-//    iteratorBFS& operator=(const iteratorBFS& oth) {
-//        g = oth.g;
-//        status.insert(oth.status.begin(), oth.status.end());
-//        gray = oth.gray;
-//        current = oth.current;
-//        return (*this);
-//    }
+    iteratorDFS& operator=(iteratorDFS oth) {
+        if (this != &oth) {
+            g = oth.g;
+            status.insert(oth.status.begin(), oth.status.end());
+            status.insert(oth.status.cbegin(), oth.status.cend());
+            std::stack<std::weak_ptr<vertex<V, E> > > st;
 
-//    bool operator==(const iteratorBFS& oth) const {
-//        return current.lock().get() == oth.current.lock().get();
-//    }
+            while (!oth.discovered.empty()) {
+                st.push(oth.discovered.top());
+                oth.discovered.pop();
+            }
+            while (!st.empty()) {
+                oth.discovered.push(st.top());
+                discovered.push(st.top());
+                st.pop();
+            }
+            number_of_visit = oth.number_of_visit;
+            unfinished.insert(oth.unfinished.cbegin(), oth.unfinished.cend());
+            current = oth.current;
+        }
+        return (*this);
+    }
 
-//    bool operator!=(const iteratorBFS& oth) const {
-//        return this->current.lock().get() != oth.current.lock().get();
-//    }
+    bool operator==(const iteratorDFS& oth) const {
+        return current.lock().get() == oth.current.lock().get();
+    }
+
+    bool operator!=(const iteratorDFS& oth) const {
+        return this->current.lock().get() != oth.current.lock().get();
+    }
 
 };
 #endif // ITERATORDFS_H

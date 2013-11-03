@@ -11,7 +11,7 @@ class graph<V, E>::iteratorBFS {
     std::map<std::weak_ptr<vertex<V, E>>, BFS_vertex_characterization> status;
     std::queue<std::weak_ptr<vertex<V, E> > > gray;
     std::weak_ptr<vertex<V, E> > current;
-    const graph<V, E>* g;
+    graph<V, E>* g;
     int number_of_black = 0;
 
 public:
@@ -22,7 +22,7 @@ public:
     }
 
 private:
-    iteratorBFS(const graph<V, E> *G, std::weak_ptr<vertex<V, E> > start) {
+    iteratorBFS(graph<V, E> *G, std::weak_ptr<vertex<V, E> > start) {
         g = G;
         BFS_vertex_characterization description;
         description.color = 0;
@@ -64,7 +64,7 @@ public:
                 gray.push(new_working_vertex);
                 this->operator++();
             } else {
-                (*this) = g->end();
+                (*this) = g->BFSend();
             }
         }
         return *this;

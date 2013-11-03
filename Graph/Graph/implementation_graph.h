@@ -85,24 +85,28 @@ void graph<V, E>::remove_edge(V vertex_start_name, V vertex_finish_name) throw (
 }
 
 template <typename V, typename E>
-typename graph<V, E>::iteratorBFS graph<V, E>::BFSbegin() const {
+typename graph<V, E>::iteratorBFS graph<V, E>::BFSbegin() {
     return iteratorBFS(this, this->vertices.begin()->second);
 }
 
 template <typename V, typename E>
-typename graph<V, E>::iteratorBFS graph<V, E>::BFSend() const {
+typename graph<V, E>::iteratorBFS graph<V, E>::BFSend() {
     return end_itr_BFS;
 }
 
 template <typename V, typename E>
-typename graph<V, E>::iteratorDFS graph<V, E>::DFSbegin() const {
-    return iteratorDFS(this, this->vertices.begin()->second);
+typename graph<V, E>::iteratorDFS graph<V, E>::DFSbegin() {
+    return iteratorDFS(this, this->vertices.begin()->second).begin();
 }
 
 template <typename V, typename E>
-typename graph<V, E>::iteratorDFS graph<V, E>::DFSend() const {
+typename graph<V, E>::iteratorDFS graph<V, E>::DFSend() {
     return end_itr_DFS;
 }
 
+template <typename V, typename E>
+typename graph<V, E>::iteratorDFS graph<V, E>::DFSstart() {
+    return iteratorDFS(this, this->vertices.begin()->second);
+}
 
 #endif // IMPLEMENTATION_GRAPH_H
