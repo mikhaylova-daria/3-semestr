@@ -4,17 +4,9 @@
 #include <queue>
 
 template <typename V, typename E>
-bool operator < (std::weak_ptr<vertex<V, E> > ptr, std::weak_ptr<vertex<V, E> > other_ptr){
-    return (ptr.lock())->name < (other_ptr.lock())->name;
-}
-
-template <typename V, typename E>
-bool operator == (std::weak_ptr<vertex<V, E> > ptr, std::weak_ptr<vertex<E, V> > other_ptr){
-    return (ptr.lock())->name == (other_ptr.lock())->name;
-}
-
-template <typename V, typename E>
 graph<V, E>::graph() {
+    my_null = std::shared_ptr<vertex<V, E> >(new vertex<V, E>());
+    end_itr_BFS.current = this->my_null;
 }
 
 template <typename V, typename E>
@@ -72,7 +64,7 @@ void graph<V, E>::remove_vertex(V name) throw (my::exception) {
 }
 
 template<typename V, typename E>
-void graph<V, E>::remove_edge(V vertex_start_name, V vertex_finish_name) throw(my::exception) {
+void graph<V, E>::remove_edge(V vertex_start_name, V vertex_finish_name) throw (my::exception) {
     typename std::unordered_map<V, std::shared_ptr<vertex<V, E>> >::iterator itr_main_map_start, itr_main_map_finish;
     itr_main_map_start = this->vertices.find(vertex_start_name);
     itr_main_map_finish = this->vertices.find(vertex_finish_name);
@@ -93,14 +85,13 @@ void graph<V, E>::remove_edge(V vertex_start_name, V vertex_finish_name) throw(m
 }
 
 template <typename V, typename E>
-typename graph<V, E>::iteratorBFS graph<V, E>::begin() {
-    return iteratorBFS(this, (*(this->vertices.begin())).first);
+typename graph<V, E>::iteratorBFS graph<V, E>::begin() const {
+    return iteratorBFS(this, this->vertices.begin()->second);
 }
 
 template <typename V, typename E>
-typename graph<V, E>::iteratorBFS graph<V, E>::end() {
-    iteratorBFS itr;
-    return itr;
+typename graph<V, E>::iteratorBFS graph<V, E>::end() const {
+    return end_itr_BFS;
 }
 
 

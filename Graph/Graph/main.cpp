@@ -27,15 +27,19 @@ int main() {
     }
 
     try {
-        a.remove_edge('s', 'v');
+        a.remove_edge('s', 'w');
     } catch (my::exception e) {
         std::cout<<e.what()<<std::endl;
     }
+    a.print();
+    graph<char, int>::iteratorBFS itr;
+    for (itr = a.begin(); itr != a.end(); ++itr) {
+        std::cout <<"Вершина:"<< itr->name<<std::endl;
+        std::map<std::weak_ptr<vertex<char, int> >, int>::const_iterator itr_adj;
+        for (itr_adj = itr->edges_from.cbegin(); itr_adj != itr->edges_from.cend(); ++itr_adj) {
+            std::cout << itr->name<< "-"<<itr_adj->first.lock()->name<<": "<<itr_adj->second<<std::endl;
+        }
+    }
 
-//    graph<char, int>::iteratorBFS itr = a.begin();
-//    for (itr = a.begin(); itr != a.end(); ++itr) {
-//        std::cout << itr->name<<std::endl;
-//    }
-     a.print();
     return 0;
 }

@@ -24,6 +24,17 @@ public:
 };
 }
 
+template <typename T>
+bool operator < (std::weak_ptr<T> ptr, std::weak_ptr<T> other_ptr){
+    return ptr.lock().get() < other_ptr.lock().get();
+}
+
+template <typename T>
+bool operator == (const std::weak_ptr<T> & ptr, const std::weak_ptr<T> & other_ptr){
+    return ptr.lock().get() == other_ptr.lock().get();
+}
+
+
 template<typename V, typename E>
 class graph;
 
@@ -38,6 +49,7 @@ public:
     vertex (V  _name): name(_name) {;}
     ~vertex() {}
     friend class graph<V, E>::iteratorBFS;
+    friend class graph<V, E>;
 };
 
 
@@ -45,7 +57,6 @@ public:
 template<typename V, typename E>
 class graph
 {
-    std::unordered_map<V, std::shared_ptr<vertex<V, E> > > vertices;
 public:
     class iteratorBFS;
     class iteratorDFS;
@@ -56,8 +67,8 @@ public:
     void add_edge(V vertex_start_name, V vertex_finish_name, E weight);
     void remove_vertex(V name) throw (my::exception);
     void remove_edge(V vertex_start_name, V vertex_finish_name) throw (my::exception);
-    iteratorBFS begin();
-    iteratorBFS end();
+    iteratorBFS begin() const;
+    iteratorBFS end() const;
 
     void print () const {
         std::cout<<"name_start - name_finish : weight\n";
@@ -71,6 +82,10 @@ public:
         }
         return;
     }
+private:
+    std::unordered_map<V, std::shared_ptr<vertex<V, E> > > vertices;
+    std::shared_ptr<vertex<V, E> > my_null;
+    iteratorBFS end_itr_BFS;
 
 };
 
