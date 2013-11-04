@@ -137,6 +137,9 @@ public:
     }
 
     int get_color_DFS() {
+        if (current.lock().get() == g->my_null.get()) {
+            return 2;
+        }
         typename std::unordered_map<V, DFS_vertex_characterization>::const_iterator itr_st;
         itr_st = status.find(current.lock()->name);
         return itr_st->second.color;
@@ -145,6 +148,7 @@ public:
     iteratorDFS& operator=(iteratorDFS oth) {
         if (this != &oth) {
             g = oth.g;
+            status.clear();
             status.insert(oth.status.begin(), oth.status.end());
             status.insert(oth.status.cbegin(), oth.status.cend());
             std::stack<std::weak_ptr<vertex<V, E> > > st;
@@ -159,6 +163,7 @@ public:
                 st.pop();
             }
             number_of_visit = oth.number_of_visit;
+            unfinished.clear();
             unfinished.insert(oth.unfinished.cbegin(), oth.unfinished.cend());
             current = oth.current;
         }

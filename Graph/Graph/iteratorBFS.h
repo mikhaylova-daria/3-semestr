@@ -79,10 +79,26 @@ public:
     }
 
     iteratorBFS& operator=(const iteratorBFS& oth) {
-        g = oth.g;
-        status.insert(oth.status.begin(), oth.status.end());
-        gray = oth.gray;
-        current = oth.current;
+        if (this != &oth) {
+            g = oth.g;
+            status.clear();
+            status.insert(oth.status.begin(), oth.status.end());
+            std::queue<std::weak_ptr<vertex<V, E> > > q, other_gray;
+            while (!gray.empty()) {
+                gray.pop();
+            }
+            other_gray = oth.gray;
+            while (!other_gray.empty()) {
+                q.push(other_gray.front());
+                other_gray.pop();
+            }
+            while (!q.empty()) {
+                other_gray.push(q.front());
+                gray.push(q.front());
+                q.pop();
+            }
+            current = oth.current;
+        }
         return (*this);
     }
 

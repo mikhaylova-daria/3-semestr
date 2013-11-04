@@ -31,35 +31,47 @@ int main() {
 //    } catch (my::exception e) {
 //        std::cout<<e.what()<<std::endl;
 //    }
-//    graph<char, int>::iteratorDFS itrDFS;
-//    for (itrDFS = a.DFSbegin(); itrDFS != a.DFSend(); ++itrDFS) {
-//        std::cout <<"Вершина:"<< itrDFS->name<<std::endl;
+    graph<char, int>::iteratorDFS itrDFS;
+    for (itrDFS = a.DFSbegin(); itrDFS != a.DFSend(); ++itrDFS) {
+        std::cout <<"Вершина:"<< itrDFS->name<<std::endl;
+        std::map<std::weak_ptr<vertex<char, int> >, int>::const_iterator itr_adj;
+        for (itr_adj = itrDFS->edges_from.cbegin(); itr_adj != itrDFS->edges_from.cend(); ++itr_adj) {
+            std::cout << (*itrDFS).name<< "-"<<itr_adj->first.lock()->name<<": "<<itr_adj->second<<std::endl;
+        }
+    }
+    itrDFS = a.DFSstart();
+    while (itrDFS != a.DFSend()) {
+        std::cout<<itrDFS->name<<" "<<itrDFS.get_color_DFS()<<std::endl;
+        itrDFS.inc();
+    }
+
+    graph<char, int>::iteratorBFS itr;
+//    for (itr = a.BFSbegin(); itr != a.BFSend(); ++itr) {
+//        std::cout <<"Вершина:"<< itr->name<<std::endl;
 //        std::map<std::weak_ptr<vertex<char, int> >, int>::const_iterator itr_adj;
-//        for (itr_adj = itrDFS->edges_from.cbegin(); itr_adj != itrDFS->edges_from.cend(); ++itr_adj) {
-//            std::cout << (*itrDFS).name<< "-"<<itr_adj->first.lock()->name<<": "<<itr_adj->second<<std::endl;
+//        for (itr_adj = itr->edges_from.cbegin(); itr_adj != itr->edges_from.cend(); ++itr_adj) {
+//            std::cout << (*itr).name<< "-"<<itr_adj->first.lock()->name<<": "<<itr_adj->second<<std::endl;
 //        }
 //    }
-//    itrDFS = a.DFSstart();
-//    std::cout<<"jhg"<<std::endl;
-//    while (itrDFS != a.DFSend()) {
-//        std::cout<<itrDFS->name<<" "<<itrDFS.get_color_DFS()<<std::endl;
-//        itrDFS.inc();
+//    int i = 0;
+//    for (itr = a.BFSbegin(); i < 5; ++i, ++itr) {
+//        std::cout <<"Вершина:"<< itr->name<<std::endl;
+//        std::map<std::weak_ptr<vertex<char, int> >, int>::const_iterator itr_adj;
 //    }
-//    a.print();
-    graph<char, int>::iteratorBFS itr;
-    for (itr = a.BFSbegin(); itr != a.BFSend(); ++itr) {
-        std::cout <<"Вершина:"<< itr->name<<std::endl;
-        std::map<std::weak_ptr<vertex<char, int> >, int>::const_iterator itr_adj;
-        for (itr_adj = itr->edges_from.cbegin(); itr_adj != itr->edges_from.cend(); ++itr_adj) {
-            std::cout << (*itr).name<< "-"<<itr_adj->first.lock()->name<<": "<<itr_adj->second<<std::endl;
-        }
-    }
-    for (itr = a.BFSbegin(); itr != a.BFSend(); ++itr) {
-        std::cout <<"Вершина:"<< itr->name<<std::endl;
-        std::map<std::weak_ptr<vertex<char, int> >, int>::const_iterator itr_adj;
-        for (itr_adj = itr->edges_from.cbegin(); itr_adj != itr->edges_from.cend(); ++itr_adj) {
-            std::cout << (*itr).name<< "-"<<itr_adj->first.lock()->name<<": "<<itr_adj->second<<std::endl;
-        }
-    }
+//    for (itr = a.BFSbegin(); itr != a.BFSend(); ++itr) {
+//        std::cout <<"Вершина:"<< itr->name<<std::endl;
+//        std::map<std::weak_ptr<vertex<char, int> >, int>::const_iterator itr_adj;
+//        for (itr_adj = itr->edges_from.cbegin(); itr_adj != itr->edges_from.cend(); ++itr_adj) {
+//            std::cout << (*itr).name<< "-"<<itr_adj->first.lock()->name<<": "<<itr_adj->second<<std::endl;
+//        }
+//    }
+    a.print();
+    //    for (itr = a.BFSbegin(); itr != a.BFSend(); ++itr) {
+//        std::cout <<"Вершина:"<< itr->name<<std::endl;
+//        std::map<std::weak_ptr<vertex<char, int> >, int>::const_iterator itr_adj;
+//        for (itr_adj = itr->edges_from.cbegin(); itr_adj != itr->edges_from.cend(); ++itr_adj) {
+//            std::cout << (*itr).name<< "-"<<itr_adj->first.lock()->name<<": "<<itr_adj->second<<std::endl;
+//        }
+//    }
     return 0;
 }

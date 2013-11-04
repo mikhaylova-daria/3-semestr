@@ -7,6 +7,7 @@ template <typename V, typename E>
 graph<V, E>::graph() {
     my_null = std::shared_ptr<vertex<V, E> >(new vertex<V, E>());
     end_itr_BFS.current = this->my_null;
+    end_itr_DFS.current = this->my_null;
 }
 
 template <typename V, typename E>
