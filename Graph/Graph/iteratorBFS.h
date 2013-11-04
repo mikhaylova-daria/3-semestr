@@ -43,7 +43,6 @@ public:
         if (!gray.empty()) {
             current = gray.front();
             gray.pop();
-            status.erase(current);
             typename std::map<std::weak_ptr <vertex<V, E> >, E>::const_iterator itr_adj;
             for (itr_adj = current.lock()->edges_from.cbegin(); itr_adj != current.lock()->edges_from.cend(); ++itr_adj) {
                 typename std::map<std::weak_ptr<vertex<V, E> >,  BFS_vertex_characterization>::iterator itr_st;
@@ -56,6 +55,7 @@ public:
                     }
                 }
             }
+            status.erase(current);
             ++number_of_black;
         } else {
             if (number_of_black < g->vertices.size()) {
@@ -64,7 +64,7 @@ public:
                 gray.push(new_working_vertex);
                 this->operator++();
             } else {
-                (*this) = g->BFSend();
+                this->current = g->my_null;
             }
         }
         return *this;
@@ -81,6 +81,7 @@ public:
     iteratorBFS& operator=(const iteratorBFS& oth) {
         if (this != &oth) {
             g = oth.g;
+            number_of_black = oth.number_of_black;
             status.clear();
             status.insert(oth.status.begin(), oth.status.end());
             std::queue<std::weak_ptr<vertex<V, E> > > q, other_gray;
