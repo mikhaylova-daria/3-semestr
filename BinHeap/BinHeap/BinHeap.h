@@ -1,11 +1,13 @@
 #ifndef BINHEAP_H
 #define BINHEAP_H
 #include <memory>
+#include <list>
 #include "libr.h"
 
 
 template <typename K, typename V = int, typename Compare = std::less<K> >
 class BinomialHeap {
+public:
     class Node {
         K key;
         int degree;
@@ -33,29 +35,44 @@ class BinomialHeap {
             return key;
         }
 
+        friend std::ostream& operator << (std::ostream& ostr, std::shared_ptr<Node> const & node)  {
+            ostr << node->key << " (" << node->value << ") ";
+            return ostr;
+        }
+
         friend class BinomialHeap;
     };
 
+private:
     std::shared_ptr<Node> head;
-    std::shared_ptr<Node> NIL;
+    static std::shared_ptr<Node> NIL;
     K absMin;
+    K absMax;
+    Compare comp;
+    static int numberOfHeap;
 
 public:
-    Compare comp;
+
     BinomialHeap(K infinity, K _absMin) {
-        std::shared_ptr<Node> buf(new Node());
-        NIL = buf;
+        if (NIL.get() == nullptr) {
+            NIL = std::make_shared<Node>(*(new Node()));
+            NIL -> parent = NIL;
+            NIL -> child = NIL;
+            NIL ->sibling = NIL;
+        }
         head = NIL;
-        NIL->key = infinity;
+        absMax = infinity;
         absMin = _absMin;
     }
 
-    ~BinomialHeap(){}
+    ~BinomialHeap(){
+        --numberOfHeap;
+    }
 
-    std::shared_ptr<Node> binomialHeapMinimum() {
+    std::shared_ptr<Node> binomialHeapMinimum() {//!
         std::shared_ptr<Node> y = NIL;
         std::shared_ptr<Node> x = head;
-        K min = NIL->key;
+        K min = absMax;
         while (x != NIL) {
             if (comp(x->key, min)) {
                 min = x->key;
@@ -64,6 +81,14 @@ public:
             x = x->sibling;
         }
         return y;
+    }
+
+    bool isEmpty() {
+        if (head != NIL) {
+            return false;
+        } else {
+            return true;
+        }
     }
 
     void binomialLinkTreeSecondWillBeRoot(std::shared_ptr<Node> rootOfFirst, std::shared_ptr<Node> rootOfSecond) {
@@ -77,26 +102,12 @@ public:
     std::shared_ptr<Node> binomialHeapMerge(std::shared_ptr<Node> first, std::shared_ptr<Node> second){
         std::shared_ptr<Node> resultListHead;
         std::shared_ptr<Node> currentRoot;
-        if (first == NIL) {
-            resultListHead = second;
-            if (second == NIL) {
-                return NIL;
-            } else {
-                second = second->sibling;
-            }
+        if (first->degree < second->degree) {
+            resultListHead = first;
+            first = first->sibling;
         } else {
-            if (second == NIL) {
-                resultListHead = first;
-                first = first->sibling;
-            } else {
-                if (first->degree < second->degree) {
-                    resultListHead = first;
-                    first = first->sibling;
-                } else {
-                    resultListHead = second;
-                    second = second->sibling;
-                }
-            }
+            resultListHead = second;
+            second = second->sibling;
         }
         currentRoot = resultListHead;
         while (first != NIL && second != NIL) {
@@ -111,18 +122,18 @@ public:
         }
         if (first != NIL) {
             currentRoot->sibling = first;
-        } else {
+        }
+        if (second != NIL) {
             currentRoot->sibling = second;
         }
         return resultListHead;
     }
 
-    std::shared_ptr<BinomialHeap> unionWith(BinomialHeap& otherHeap) {
-        std::shared_ptr<BinomialHeap> heapResalt(new BinomialHeap(NIL->key, absMin));
-        heapResalt->head = binomialHeapMerge(this->head, otherHeap.head);
+    void unionWith(BinomialHeap& otherHeap) {
+        this->head = binomialHeapMerge(this->head, otherHeap.head);
         if (head != NIL) {
             std::shared_ptr<Node> prev_x = NIL;
-            std::shared_ptr<Node> x = heapResalt->head;
+            std::shared_ptr<Node> x = head;
             std::shared_ptr<Node> next_x = x->sibling;
             while (next_x != NIL) {
                 if ((x->degree != next_x->degree)
@@ -135,7 +146,7 @@ public:
                         binomialLinkTreeSecondWillBeRoot(next_x, x);
                     } else {
                         if (prev_x == NIL) {
-                            heapResalt->head = next_x;
+                            head = next_x;
                         } else {
                             prev_x->sibling = next_x;
                         }
@@ -146,24 +157,29 @@ public:
                 next_x = x->sibling;
             }
         }
-        return heapResalt;
     }
-    struct ExtractResult {
-        K key;  //ключ удалённого
-        V value; // значение удалённого
-        std::shared_ptr<Node> newPointerOnSibling;  //новый указатель сестринского элемента удалённого
-    };
 
-    std::shared_ptr<ExtractResult> binomialHeapExtractMin() {
-        std::shared_ptr<ExtractResult> result(new ExtractResult);
+
+    std::shared_ptr<Node> binomialHeapExtractMin() {
         std::shared_ptr<Node> min = binomialHeapMinimum();
         std::shared_ptr<Node> headOfListOfChildren = min->child;
         std::shared_ptr<Node> buf;
         std::shared_ptr<Node> next = headOfListOfChildren->sibling;
-        result->key = min->key;
-        result->value = min->value;
-        result->newPointerOnSibling = min;
-        while (headOfListOfChildren != NIL) {
+        if (min == head) {
+            head = min->sibling;
+        } else {
+            std::shared_ptr<Node> buf_node = head;
+            std::shared_ptr<Node> prev_min;
+            while (buf_node != min) {
+                prev_min = buf_node;
+                buf_node = buf_node->sibling;
+            }
+            prev_min->sibling = min->sibling;
+        }
+        if (min->child == NIL) {
+            return min;
+        }
+        while (next != NIL) {
             headOfListOfChildren->parent = NIL;
             buf = headOfListOfChildren;
             headOfListOfChildren = next;
@@ -171,14 +187,10 @@ public:
             headOfListOfChildren->sibling = buf;
         }
         min->child->sibling = NIL;
-        min->child = min->sibling->child;
-        min->key = min->sibling->key;
-        min->degree = min->sibling->degree;
-        min->sibling = min->sibling->sibling;
-        BinomialHeap helper(NIL->key, absMin);
+        BinomialHeap helper(absMax, absMin);
         helper.head = headOfListOfChildren;
-        head = this->unionWith(helper)->head;
-        return result;
+        this->unionWith(helper);
+        return min;
     }
 
     void binomialHeapInsert(std::shared_ptr<Node> x) {
@@ -186,9 +198,9 @@ public:
         x->child = NIL;
         x->sibling = NIL;
         x->degree = 0;
-        BinomialHeap helpHeap(NIL->key, absMin);
+        BinomialHeap helpHeap(absMax, absMin);
         helpHeap.head = x;
-        this->head = this->unionWith(helpHeap)->head;
+        this->unionWith(helpHeap);
     }
 
     K binomialHeapDecreaseKey(std::shared_ptr<Node> node, K newKey) {
@@ -200,27 +212,45 @@ public:
         std::shared_ptr<Node> y = node;
         std::shared_ptr<Node> z = y->parent.lock();
         while (z != NIL && comp(y->key, z->key)) {
-            K bufKey = y->key;
-            V bufValue = y->value;
-            y->key = z->key;
-            y->value = z->value;
-            z->key = bufKey;
-            z->value = bufValue;
+            std::shared_ptr<Node> buf_parent_y = y->parent.lock();
+            std::shared_ptr<Node> buf_parent_z = z->parent.lock();
+            std::shared_ptr<Node> buf_child =  y->child;
+            std::shared_ptr<Node> buf_sibling =  y->sibling;
+            y->parent = z->parent;
+            y->child = z->child;
+            y->sibling = z->sibling;
+            z->parent = buf_parent_y;
+            z->child = buf_child;
+            z->sibling = buf_sibling;
+            std::shared_ptr<Node> buf_node = buf_parent_y->child;
+            if (buf_node != y) {
+                while (buf_node->sibling != y) {
+                    buf_node = buf_node->sibling;
+                }
+                buf_node->sibling = z;
+            }
+            buf_node = buf_parent_z->child;
+            if (buf_node != z) {
+                while (buf_node->sibling != z) {
+                    buf_node = buf_node->sibling;
+                }
+                buf_node->sibling = y;
+            }
             y = z;
             z = y->parent.lock();
         }
         return oldKey;
     }
 
-    std::shared_ptr<ExtractResult>binomialHeapDelete(std::shared_ptr<Node> node) {
+    std::shared_ptr<Node>binomialHeapDelete(std::shared_ptr<Node> node) {
         K key = binomialHeapDecreaseKey(node, absMin);
-        std::shared_ptr<ExtractResult> result = binomialHeapExtractMin()->second;
+        std::shared_ptr<Node> result = binomialHeapExtractMin();
         result->key = key;
         return result;
     }
 
     std::shared_ptr<Node> put(K key) {
-        if (comp(NIL->key,key)) {
+        if (comp(absMax, key)) {
             throw(my::exception("This key is more then plus infinity"));
         }
         if (comp(key, absMin)) {
@@ -232,7 +262,7 @@ public:
     }
 
     std::shared_ptr<Node> put(K key, V value) {
-        if (comp(NIL->key,key)) {
+        if (comp(absMax, key)) {
             throw(my::exception("This key is more then plus infinity"));
         }
         if (comp(key, absMin)) {
@@ -244,10 +274,10 @@ public:
     }
 
     bool increasePlusInfinity(K infinity) {
-        if (comp(infinity, NIL->key)) {
+        if (comp(infinity, absMax)) {
             return false;
         } else {
-            NIL->key = infinity;
+            absMax = infinity;
             return true;
         }
     }
@@ -261,6 +291,76 @@ public:
         }
 
     }
+
+    std::list<std::shared_ptr<Node> > getNodesList() {
+        std::list<std::shared_ptr<Node> > answer;
+        std::shared_ptr<Node> node = this->head;
+        answer.push_back(node);
+        while (node != NIL) {
+            this->get_children(answer, node);
+            node = node ->sibling;
+        }
+        return answer;
+    }
+
+    friend std::istream& operator >>  (std::istream& istr, BinomialHeap<K, V, Compare> & heap){
+        K key;
+        V value;
+        std::shared_ptr<Node> last;
+        istr >> key >> value;
+        while (!istr.eof()) {
+            last = heap.put(key, value);
+            istr >> key >> value;
+        }
+        return istr;
+    }
+
+    friend std::ostream& operator << (std::ostream& ostr, BinomialHeap<K, V, Compare> & heap)  {
+        std::shared_ptr<Node> node = heap.head;
+        int count_tab = 0;
+        while (node != NIL) {
+            ostr << node << "\n";
+            ++count_tab;
+            heap.print_children(ostr, node, count_tab);
+            --count_tab;
+            node = node ->sibling;
+            ostr << "\n\n";
+        }
+        return ostr;
+    }
+
+private:
+    void print_children(std::ostream& ostr, std::shared_ptr<Node> node, int count_tab) {
+        node = node->child;
+        while (node != this->NIL) {
+            for (int i = 0; i < count_tab; ++i) {
+                ostr << "\t";
+            }
+            ostr << node << "\n";
+            ++count_tab;
+            print_children(ostr, node, count_tab);
+            --count_tab;
+            node = node->sibling;
+        }
+        return;
+    }
+
+    void get_children(std::list<std::shared_ptr<Node> >& answer, std::shared_ptr<Node> node) {
+        node = node->child;
+        while (node != this->NIL) {
+            answer.push_back(node);
+            get_children(answer, node);
+            node = node->sibling;
+        }
+        return;
+    }
 };
+
+
+template <typename K, typename V, typename Compare>
+int BinomialHeap<K, V, Compare>::numberOfHeap = 0;
+
+template <typename K, typename V, typename Compare>
+std::shared_ptr<typename BinomialHeap<K, V, Compare>::Node> BinomialHeap<K, V, Compare>::NIL = nullptr;
 
 #endif // BINHEAP_H
