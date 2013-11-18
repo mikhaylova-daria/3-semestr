@@ -10,9 +10,9 @@ class graph<V, E>::iteratorDFS {
         std::weak_ptr<vertex<V, E> > parent;
         std::weak_ptr<vertex<V, E> > ptr;
         typename std::map<std::weak_ptr<vertex<V, E> >, E>::const_iterator next_child;
-        char color = 0;
-        int discover = 0;
-        int finish = 0;
+        char color = 0;       
+        int discover = 2147483647;
+        int finish = 2147483647;
     };
 
     std::unordered_map<V, DFS_vertex_characterization> status;
@@ -21,8 +21,15 @@ class graph<V, E>::iteratorDFS {
     const graph<V, E>* g;
     int number_of_visit = 0;
     std::unordered_set<V> unfinished;
+    bool last_was_finished = false;
 
 public:
+    int get_discovery_time() {
+        return status.find(current->name)->second().discover;
+    }
+    int get_finish_time() {
+        return status.find(current->name)->second().finish;
+    }
     friend class graph<V, E>;
     iteratorDFS() {
     }
@@ -53,6 +60,11 @@ private:
 public:
     iteratorDFS& inc() {
         if (!discovered.empty()) {
+            if (last_was_finished) {
+                current = discovered.top();
+                last_was_finished = false;
+                return *this;
+            }
             std::weak_ptr<vertex<V, E> > current_front = discovered.top();
             typename std::unordered_map<V, DFS_vertex_characterization>::iterator itr_st;
             itr_st = status.find(current_front.lock()->name);
@@ -76,6 +88,7 @@ public:
                         current = itr_st_next->second.ptr;
                         ++(itr_st->second.next_child);
                     } else {
+                        last_was_finished = true;
                         itr_st->second.color = 2;
                         itr_st->second.finish = number_of_visit;
                         ++number_of_visit;
@@ -83,8 +96,9 @@ public:
                         unfinished.erase(itr_st->first);
                         current = itr_st->second.ptr;
                     }
-                } else {
+                 } else {
                     if (!unfinished.empty()) {
+                        last_was_finished = true;
                         itr_st->second.color = 2;
                         itr_st->second.finish = number_of_visit;
                         ++number_of_visit;
@@ -113,6 +127,69 @@ public:
         return *this;
     }
 
+//    iteratorDFS& inc() {
+//        if (!discovered.empty()) {
+//            std::weak_ptr<vertex<V, E> > current_front = discovered.top();
+//            typename std::unordered_map<V, DFS_vertex_characterization>::iterator itr_st;
+//            itr_st = status.find(current_front.lock()->name);
+//            if (itr_st != status.end()) {
+//                if (itr_st->second.next_child != itr_st->second.ptr.lock()->edges_from.cend()) {
+//                    typename std::unordered_map<V, DFS_vertex_characterization>::iterator itr_st_next;
+//                    itr_st_next = status.find(itr_st->second.next_child->first.lock()->name);
+//                    while (itr_st_next->second.color != 0) {
+//                        ++itr_st->second.next_child;
+//                        if (itr_st->second.next_child == itr_st->second.ptr.lock()->edges_from.cend()) {
+//                            break;
+//                        }
+//                        itr_st_next = status.find(itr_st->second.next_child->first.lock()->name);
+//                    }
+//                    if (itr_st->second.next_child != itr_st->second.ptr.lock()->edges_from.cend()) {
+//                        discovered.push(itr_st->second.next_child->first);
+//                        itr_st_next->second.color = 1;
+//                        itr_st_next->second.parent = itr_st->second.ptr;
+//                        itr_st_next->second.discover = number_of_visit;
+//                        ++number_of_visit;
+//                        current = itr_st_next->second.ptr;
+//                        ++(itr_st->second.next_child);
+//                    } else {
+//                        itr_st->second.color = 2;
+//                        itr_st->second.finish = number_of_visit;
+//                        ++number_of_visit;
+//                        discovered.pop();
+//                        unfinished.erase(itr_st->first);
+//                        current = itr_st->second.ptr;
+//                    }
+//                } else {
+//                    if (!unfinished.empty()) {
+//                        itr_st->second.color = 2;
+//                        itr_st->second.finish = number_of_visit;
+//                        ++number_of_visit;
+//                        discovered.pop();
+//                        unfinished.erase(itr_st->first);
+//                        current = itr_st->second.ptr;
+//                    } else {
+//                        current = g->my_null;
+//                    }
+//                }
+//            }
+//        } else {
+//            if (!unfinished.empty()) {
+//                typename std::unordered_map<V, DFS_vertex_characterization>::iterator itr_status;
+//                itr_status = status.find(*unfinished.begin());
+//                itr_status->second.color = 1;
+//                itr_status->second.discover = number_of_visit;
+//                itr_status->second.parent = current;
+//                ++number_of_visit;
+//                discovered.push(itr_status->second.ptr);
+//                current = itr_status->second.ptr;
+//            } else {
+//                current =g->my_null;
+//            }
+//        }
+//        return *this;
+//    }
+
+
     iteratorDFS& begin() {
         while(this->get_color_DFS() != 2) {
             inc();
@@ -132,8 +209,8 @@ public:
         return (*current.lock().get());
     }
 
-    vertex<V, E>* operator->() const {
-        return current.lock().get();
+    std::shared_ptr<vertex<V, E> > operator->() const {
+        return current.lock();
     }
 
     int get_color_DFS() {

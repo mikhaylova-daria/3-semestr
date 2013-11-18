@@ -99,6 +99,13 @@ template <typename V, typename E>
 typename graph<V, E>::iteratorDFS graph<V, E>::DFSbegin() {
     return iteratorDFS(this, this->vertices.begin()->second).begin();
 }
+template <typename V, typename E>
+typename graph<V, E>::iteratorDFS graph<V, E>::DFSbegin(V start) {
+    if (this->vertices.find(start) == this->vertices.end()) {
+        throw (new my::exception("Нет такой вершины"));
+    }
+    return iteratorDFS(this, this->vertices.find(start)->second).begin();
+}
 
 template <typename V, typename E>
 typename graph<V, E>::iteratorDFS graph<V, E>::DFSend() {
@@ -108,6 +115,46 @@ typename graph<V, E>::iteratorDFS graph<V, E>::DFSend() {
 template <typename V, typename E>
 typename graph<V, E>::iteratorDFS graph<V, E>::DFSstart() {
     return iteratorDFS(this, this->vertices.begin()->second);
+}
+
+
+template <typename V, typename E>
+typename graph<V, E>::iteratorDFS graph<V, E>::DFSstart(V start) {
+    if (this->vertices.find(start) == this->vertices.end()) {
+        throw (new my::exception("Нет такой вершины"));
+    }
+    return iteratorDFS(this, this->vertices.find(start)->second);
+}
+
+
+template <typename V, typename E>
+void graph<V, E>::clear() {
+        graph<char, int>::iteratorDFS itrDFS;
+        for (itrDFS = this->DFSbegin(); itrDFS != this->DFSend(); ++itrDFS) {
+            std::map<std::weak_ptr<vertex<char, int> >, int>::const_iterator itr_adj;
+            for (itr_adj = itrDFS->edges_from.cbegin(); itr_adj != itrDFS->edges_from.cend(); ++itr_adj) {
+                this->remove_edge(itrDFS->name, itr_adj->first.lock()->name);
+            }
+            this->remove_vertex(itrDFS->name);
+        }
+}
+
+
+
+template <typename V, typename E>
+graph<V, E>& graph<V, E>::operator =(graph<V, E>& other) {
+    graph<char, int>::iteratorDFS itrDFS;
+    this->clear();
+    for (itrDFS = other.DFSbegin(); itrDFS != other.DFSend(); ++itrDFS) {
+        this->add_vertex(itrDFS->name);
+        std::map<std::weak_ptr<vertex<char, int> >, int>::const_iterator itr_adj;
+        for (itr_adj = itrDFS->edges_from.cbegin(); itr_adj != itrDFS->edges_from.cend(); ++itr_adj) {
+            this->add_edge(itrDFS->name, itr_adj->first.lock()->name,  itr_adj->second);
+        }
+    }
+    this->my_null = other.my_null;
+    this->end_itr_BFS = other.end_itr_BFS;
+    this->end_itr_DFS = other.end_itr_DFS;
 }
 
 #endif // IMPLEMENTATION_GRAPH_H

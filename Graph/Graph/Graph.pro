@@ -10,5 +10,6 @@ HEADERS += \
     graph.h \
     implementation_graph.h \
     iteratorBFS.h \
-    iteratorDFS.h
+    iteratorDFS.h \
+    Tarjan.h
 
