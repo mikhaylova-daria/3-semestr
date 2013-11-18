@@ -8,17 +8,20 @@ int main() {
         a.add_vertex(4);
         a.add_vertex(5);
         a.add_vertex(6);
+        a.add_vertex(7);
+        a.add_vertex(8);
         a.add_edge(1, 5, 0);
-        a.add_edge(5, 6, 0);
-        a.add_edge(6, 2, 0);
-        a.add_edge(2, 3, 0);
-        a.add_edge(6, 7, 0);
-        a.add_edge(7, 8, 0);
-        a.add_edge(5, 1, 0);
         a.add_edge(6, 5, 0);
-//        a.add_edge(2, 6, 0);
-//        a.add_edge(3, 2, 0);
+        a.add_edge(6, 7, 0);
         a.add_edge(7, 6, 0);
+        a.add_edge(6, 2, 0);
+        a.add_edge(5, 2, 0);
+        a.add_edge(2, 1, 0);
+        a.add_edge(3, 2, 0);
+        a.add_edge(7, 3, 0);
+        a.add_edge(3, 4, 0);
+        a.add_edge(4, 3, 0);
+        a.add_edge(8, 4, 0);
         a.add_edge(8, 7, 0);
 
 //    graph<char, int> a;
@@ -63,19 +66,19 @@ int main() {
 
     std::cout << "DFS\n";
     graph<int, int>::iteratorDFS itrDFS;
-    for (itrDFS = a.DFSbegin(1); itrDFS != a.DFSend(); ++itrDFS) {
+    for (itrDFS = a.DFSbegin(); itrDFS != a.DFSend(); ++itrDFS) {
         std::cout <<"Вершина:"<< itrDFS->name<<std::endl;
         std::map<std::weak_ptr<vertex<int, int> >, int>::const_iterator itr_adj;
         for (itr_adj = itrDFS->edges_from.cbegin(); itr_adj != itrDFS->edges_from.cend(); ++itr_adj) {
             std::cout << (*itrDFS).name<< "-"<<itr_adj->first.lock()->name<<": "<<itr_adj->second<<std::endl;
         }
     }
-    std::cout << "Псевдо: DFS\n";
-    itrDFS = a.DFSstart(1);
-    while (itrDFS != a.DFSend()) {
-        std::cout<<itrDFS->name<<" "<<itrDFS.get_color_DFS()<<std::endl;
-        itrDFS.inc();
-    }
+//    std::cout << "Псевдо: DFS\n";
+//    itrDFS = a.DFSstart();
+//    while (itrDFS != a.DFSend()) {
+//        std::cout<<itrDFS->name<<" "<<itrDFS.get_color_DFS()<<std::endl;
+//        //itrDFS.inc();
+//    }
 
 //    graph<char, int>::iteratorBFS itr;
 ////    for (itr = a.BFSbegin(); itr != a.BFSend(); ++itr) {

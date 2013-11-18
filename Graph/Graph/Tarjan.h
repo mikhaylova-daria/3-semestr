@@ -5,9 +5,21 @@
 template <typename V, typename E>
 std::list<graph<V, E> > graph<V, E>::Tarjan() {
     std::vector<std::weak_ptr<vertex<V, E> > > passed_vertices;
-    std::vector<int> orderDFSid;
+    std::unordered_map<V, int> orderDFSid;
     std::weak_ptr<vertex<V, E> > parent_of_current;
     std::list<graph<V, E> > answer;
+
+//    int i = 1;
+//    typename graph<V, E>::iteratorDFS itr;
+//    parent_of_current = this->vertices.find(this->DFSstart()->name)->second;
+//    for (itr = this->DFSstart(); itr != this->DFSend(); itr.inc()) {
+//        if (orderDFSid.find(itr->name) == orderDFSid.end()) {
+//            orderDFSid.insert(pair<V, int>(itr->name, i));
+//            ++i;
+//        } else {
+
+//        }
+
 
 //    int i = 1;
 //    typename graph<V, E>::iteratorDFS itr;
