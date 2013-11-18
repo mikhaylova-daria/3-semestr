@@ -73,7 +73,7 @@ public:
         return *this;
     }
 
-    iteratorDFS& operator++() {
+    iteratorDFS& inc() {
         std::shared_ptr<vertex<V, E> > x;
         if (!stackDFS.empty()) {
             x = stackDFS.top();
@@ -114,6 +114,20 @@ public:
             }
         }
         current = x;
+        return *this;
+    }
+
+    iteratorDFS& operator++() {
+        while (true) {
+            if (current == g->my_null) {
+                break;
+            }
+            if (status.find(current->name)->second.color == 1) {
+                this->inc();
+                break;
+            }
+            this->inc();
+        }
         return *this;
     }
 
