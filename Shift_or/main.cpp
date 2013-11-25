@@ -7,6 +7,7 @@
 #include <string>
 #include <list>
 #include <unordered_map>
+#include <unordered_set>
 
 class Shift_Or {
     std::vector<unsigned long long int> masks;
@@ -31,7 +32,7 @@ public:
     }
 
     void pre_processing() {
-        for (unsigned long i = 0; i < alphabet.length(); ++i) {
+        for (unsigned long i = 0; i < alphabet.size(); ++i) {
             unsigned long long mask = max;
             for (unsigned short j = 0; j < needle.length(); ++j) {
                 if (needle.at(j) == alphabet.at(i)) {
@@ -43,50 +44,56 @@ public:
         return;
     }
 
-    std::vector<std::vector<unsigned long long > > search(std::string text) {
+    std::vector<std::vector<unsigned long long > > search(std::istream& istr) {
         std::vector<unsigned long long> answer_equals;
         std::vector<unsigned long long> answer_approximate_with_replacement;
         std::vector<unsigned long long> answer_approximate_with_excision;
         std::vector<unsigned long long> answer_approximate_with_insert;
         unsigned long long int mask;
         mask = max;
-        if (text.at(0) == needle.at(0)) {
+        char current_char = istr.get();
+        if (current_char == needle.at(0)) {
             mask = (max ^ (1 << (needle.length() - 1)));
         }
         table_equal.push_back(mask);
         table_approximate_with_insert.push_back(mask);
         table_approximate_with_excision.push_back(mask >> 1);
         table_approximate_with_replacement.push_back(mask >> 1);
-        for (unsigned long long i = 1; i < text.length(); ++i) {
-            char current_char = text.at(i);
-            table_approximate_with_insert.push_back(table_equal.back()
-                    & ((table_approximate_with_insert.back() >> 1) | alphabet_masks.at(current_char)));
-            table_approximate_with_replacement.push_back((table_equal.back() >> 1) & ((table_approximate_with_replacement.back() >> 1) | alphabet_masks.at(current_char)));
-            table_equal.push_back(((table_equal.back() >> 1) | alphabet_masks.at(current_char)));
-            table_approximate_with_excision.push_back((table_equal.back() >> 1)
-                                                      & ((table_approximate_with_excision.back() >> 1) | alphabet_masks.at(current_char)));
-            table_approximate_with_excision.pop_front();
-            table_approximate_with_insert.pop_front();
-            table_approximate_with_replacement.pop_front();
-            table_equal.pop_front();
-            if (table_equal.back() % 2 == 0) {
-                answer_equals.push_back(i - needle.length() + 2);
-                if (i - needle.length() + 2 > 1) {
-                    answer_approximate_with_insert.push_back(i - needle.length() + 1);
+        bool flag = true;
+        for (unsigned long long i = 1; flag; ++i) {
+            current_char = istr.get();
+            if (!istr.eof() && (alphabet_masks.find(current_char) != alphabet_masks.end())) {
+                table_approximate_with_insert.push_back(table_equal.back()
+                        & ((table_approximate_with_insert.back() >> 1) | alphabet_masks.at(current_char)));
+                table_approximate_with_replacement.push_back((table_equal.back() >> 1) & ((table_approximate_with_replacement.back() >> 1) | alphabet_masks.at(current_char)));
+                table_equal.push_back(((table_equal.back() >> 1) | alphabet_masks.at(current_char)));
+                table_approximate_with_excision.push_back((table_equal.back() >> 1)
+                                                          & ((table_approximate_with_excision.back() >> 1) | alphabet_masks.at(current_char)));
+                table_approximate_with_excision.pop_front();
+                table_approximate_with_insert.pop_front();
+                table_approximate_with_replacement.pop_front();
+                table_equal.pop_front();
+                if (table_equal.back() % 2 == 0) {
+                    answer_equals.push_back(i - needle.length() + 2);
+                    if (i - needle.length() + 2 > 1) {
+                        answer_approximate_with_insert.push_back(i - needle.length() + 1);
+                    }
                 }
-            }
-            if (table_approximate_with_insert.back() % 2 == 0 && table_equal.back() % 2 != 0) {
-                if (i - needle.length() + 1 > 0) {
-                    answer_approximate_with_insert.push_back(i - needle.length() + 1);
+                if (table_approximate_with_insert.back() % 2 == 0 && table_equal.back() % 2 != 0) {
+                    if (i - needle.length() + 1 > 0) {
+                        answer_approximate_with_insert.push_back(i - needle.length() + 1);
+                    }
                 }
-            }
-            if (table_approximate_with_replacement.back() % 2 == 0 && table_equal.back() % 2 != 0) {
-                if (i - needle.length() + 1 > 0) {
-                    answer_approximate_with_replacement.push_back(i - needle.length() + 2);
+                if (table_approximate_with_replacement.back() % 2 == 0 && table_equal.back() % 2 != 0) {
+                    if (i - needle.length() + 1 > 0) {
+                        answer_approximate_with_replacement.push_back(i - needle.length() + 2);
+                    }
                 }
-            }
-            if (table_approximate_with_excision.back() % 2 == 0 && table_equal.back() % 2 != 0) {
-                answer_approximate_with_excision.push_back(i - needle.length() + 3);
+                if (table_approximate_with_excision.back() % 2 == 0 && table_equal.back() % 2 != 0) {
+                    answer_approximate_with_excision.push_back(i - needle.length() + 3);
+                }
+            } else {
+                flag = false;
             }
         }
         std::vector<std::vector<unsigned long long int> > answer;
@@ -113,9 +120,9 @@ public:
 //        return istr;
 //    }
 
-    void read (std::istream& istr) {
-        istr.get();
-    }
+//    void read (std::istream& istr) {
+//        istr.get();
+//    }
 };
 
 
@@ -124,7 +131,7 @@ using namespace std;
 int main()
 {
     Shift_Or so("abra", "acdbr");
-    std::vector<std::vector<unsigned long long> >answer = so.search("aabrararaabbra");
+    std::vector<std::vector<unsigned long long> >answer = so.search(std::cin);
     std::cout<<"equal:\n";
     for (int i = 0; i < answer[0].size(); ++ i) {
         cout<<answer[0][i]<<std::endl;
