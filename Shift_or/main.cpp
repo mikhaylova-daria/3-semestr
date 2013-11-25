@@ -8,6 +8,7 @@
 #include <list>
 #include <unordered_map>
 #include <unordered_set>
+#include <fstream>
 
 class Shift_Or {
     std::vector<unsigned long long int> masks;
@@ -103,26 +104,6 @@ public:
         answer.push_back(answer_approximate_with_replacement);
         return answer;
     }
-
-
-
-//    friend std::ostream& operator << (std::ostream& ostr, std::shared_ptr<Node> const & node)  {
-//        ostr << node->key << " (" << node->value << ") ";
-//        return ostr;
-//    }
-
-//    friend std::istream& operator >>  (std::istream& istr, BinomialHeap<K, V, Compare> & heap){
-//        istr >>  >> value;
-//        while (!istr.eof()) {
-//            last = heap.put(key, value);
-//            istr >> key >> value;
-//        }
-//        return istr;
-//    }
-
-//    void read (std::istream& istr) {
-//        istr.get();
-//    }
 };
 
 
@@ -130,8 +111,11 @@ using namespace std;
 
 int main()
 {
+    ifstream istr("/home/darya/OOP/Shift_or/input.txt");
+
     Shift_Or so("abra", "acdbr");
-    std::vector<std::vector<unsigned long long> >answer = so.search(std::cin);
+    std::vector<std::vector<unsigned long long> >answer; //= so.search(std::cin);
+    answer = so.search(istr);
     std::cout<<"equal:\n";
     for (int i = 0; i < answer[0].size(); ++ i) {
         cout<<answer[0][i]<<std::endl;
@@ -148,6 +132,7 @@ int main()
     for (int i = 0; i < answer[3].size(); ++ i) {
         cout<<answer[3][i]<<std::endl;
     }
+
     return 0;
 }
 
