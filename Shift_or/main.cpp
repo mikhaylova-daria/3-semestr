@@ -55,11 +55,14 @@ public:
         }
         table_equal.push_back(mask);
         table_approximate_with_insert.push_back(mask);
+        table_approximate_with_excision.push_back(mask >> 1);
         for (unsigned long long i = 1; i < text.length(); ++i) {
             char current_char = text.at(i);
             table_approximate_with_insert.push_back(table_equal.back()
                     & ((table_approximate_with_insert.back() >> 1) | alphabet_masks.at(current_char)));
             table_equal.push_back(((table_equal.back() >> 1) | alphabet_masks.at(current_char)));
+            table_approximate_with_excision.push_back((table_equal.back() >> 1)
+                                                      & ((table_approximate_with_excision.back() >> 1) | alphabet_masks.at(current_char)));
             if (table_equal.back() % 2 == 0) {
                 answer_equals.push_back(i - needle.length() + 2);
                 if (i - needle.length() + 2 > 1) {
@@ -67,7 +70,12 @@ public:
                 }
             }
             if (table_approximate_with_insert.back() % 2 == 0 && table_equal.back() % 2 != 0) {
-                answer_approximate_with_insert.push_back(i - needle.length() + 1);
+                if (i - needle.length() + 1 > 0) {
+                    answer_approximate_with_insert.push_back(i - needle.length() + 1);
+                }
+            }
+            if (table_approximate_with_excision.back() % 2 == 0 && table_equal.back() % 2 != 0) {
+                answer_approximate_with_excision.push_back(i - needle.length() + 3);
             }
 
         }
@@ -107,15 +115,19 @@ int main()
 {
     Shift_Or so("abra", "acdbr");
     std::vector<std::vector<unsigned long long> >answer = so.search("aabrararaabbra");
+    std::cout<<"equal:\n";
     for (int i = 0; i < answer[0].size(); ++ i) {
         cout<<answer[0][i]<<std::endl;
     }
+    std::cout<< "with_excision:\n";
     for (int i = 0; i < answer[1].size(); ++ i) {
-        cout<<answer[21][i]<<std::endl;
+        cout<<answer[1][i]<<std::endl;
     }
+    std::cout<< "with_insert:\n";
     for (int i = 0; i < answer[2].size(); ++ i) {
         cout<<answer[2][i]<<std::endl;
     }
+    std::cout<< "with_repl:\n";
     for (int i = 0; i < answer[3].size(); ++ i) {
         cout<<answer[3][i]<<std::endl;
     }
