@@ -13,6 +13,7 @@ class Shift_Or {
     std::vector<unsigned long long int> table_equal;
     std::vector<unsigned long long int> table_approximate_with_replacement;
     std::vector<unsigned long long int> table_approximate_with_excision;
+    std::vector<unsigned long long int> table_approximate_with_insert;
     std::string needle;
     long long int max = 0;
     std::string text;
@@ -42,25 +43,43 @@ public:
         return;
     }
 
-    std::vector<unsigned long long > search_equal(std::string text) {
-        std::vector<unsigned long long> answer;
+    std::vector<std::vector<unsigned long long > > search(std::string text) {
+        std::vector<unsigned long long> answer_equals;
+        std::vector<unsigned long long> answer_approximate_with_replacement;
+        std::vector<unsigned long long> answer_approximate_with_excision;
+        std::vector<unsigned long long> answer_approximate_with_insert;
         unsigned long long int mask;
-        mask = std::numeric_limits<unsigned long long int>::max();
+        mask = max;
         if (text.at(0) == needle.at(0)) {
             mask = (max ^ (1 << (needle.length() - 1)));
-            table_equal.push_back(mask);
         }
         table_equal.push_back(mask);
+        table_approximate_with_insert.push_back(mask);
         for (unsigned long long i = 1; i < text.length(); ++i) {
             char current_char = text.at(i);
-            unsigned long long int mask_for_current_char = ((table_equal.back() >> 1) | alphabet_masks.at(current_char));
-            table_equal.push_back(mask_for_current_char);
-            if (mask_for_current_char % 2 == 0) {
-                answer.push_back(i - needle.length() + 2);
+            table_approximate_with_insert.push_back(table_equal.back()
+                    & ((table_approximate_with_insert.back() >> 1) | alphabet_masks.at(current_char)));
+            table_equal.push_back(((table_equal.back() >> 1) | alphabet_masks.at(current_char)));
+            if (table_equal.back() % 2 == 0) {
+                answer_equals.push_back(i - needle.length() + 2);
+                if (i - needle.length() + 2 > 1) {
+                    answer_approximate_with_insert.push_back(i - needle.length() + 1);
+                }
             }
+            if (table_approximate_with_insert.back() % 2 == 0 && table_equal.back() % 2 != 0) {
+                answer_approximate_with_insert.push_back(i - needle.length() + 1);
+            }
+
         }
+        std::vector<std::vector<unsigned long long int> > answer;
+        answer.push_back(answer_equals);
+        answer.push_back(answer_approximate_with_excision);
+        answer.push_back(answer_approximate_with_insert);
+        answer.push_back(answer_approximate_with_replacement);
         return answer;
     }
+
+
 
 //    friend std::ostream& operator << (std::ostream& ostr, std::shared_ptr<Node> const & node)  {
 //        ostr << node->key << " (" << node->value << ") ";
@@ -87,9 +106,18 @@ using namespace std;
 int main()
 {
     Shift_Or so("abra", "acdbr");
-    std::vector<unsigned long long> answer = so.search_equal("abracadabra");
-    for (int i = 0; i < answer.size(); ++ i) {
-        cout<<answer.at(i)<<std::endl;
+    std::vector<std::vector<unsigned long long> >answer = so.search("aabrararaabbra");
+    for (int i = 0; i < answer[0].size(); ++ i) {
+        cout<<answer[0][i]<<std::endl;
+    }
+    for (int i = 0; i < answer[1].size(); ++ i) {
+        cout<<answer[21][i]<<std::endl;
+    }
+    for (int i = 0; i < answer[2].size(); ++ i) {
+        cout<<answer[2][i]<<std::endl;
+    }
+    for (int i = 0; i < answer[3].size(); ++ i) {
+        cout<<answer[3][i]<<std::endl;
     }
     return 0;
 }
