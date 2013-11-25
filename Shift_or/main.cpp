@@ -56,10 +56,12 @@ public:
         table_equal.push_back(mask);
         table_approximate_with_insert.push_back(mask);
         table_approximate_with_excision.push_back(mask >> 1);
+        table_approximate_with_replacement.push_back(mask >> 1);
         for (unsigned long long i = 1; i < text.length(); ++i) {
             char current_char = text.at(i);
             table_approximate_with_insert.push_back(table_equal.back()
                     & ((table_approximate_with_insert.back() >> 1) | alphabet_masks.at(current_char)));
+            table_approximate_with_replacement.push_back((table_equal.back() >> 1) & ((table_approximate_with_replacement.back() >> 1) | alphabet_masks.at(current_char)));
             table_equal.push_back(((table_equal.back() >> 1) | alphabet_masks.at(current_char)));
             table_approximate_with_excision.push_back((table_equal.back() >> 1)
                                                       & ((table_approximate_with_excision.back() >> 1) | alphabet_masks.at(current_char)));
@@ -72,6 +74,11 @@ public:
             if (table_approximate_with_insert.back() % 2 == 0 && table_equal.back() % 2 != 0) {
                 if (i - needle.length() + 1 > 0) {
                     answer_approximate_with_insert.push_back(i - needle.length() + 1);
+                }
+            }
+            if (table_approximate_with_replacement.back() % 2 == 0 && table_equal.back() % 2 != 0) {
+                if (i - needle.length() + 1 > 0) {
+                    answer_approximate_with_replacement.push_back(i - needle.length() + 2);
                 }
             }
             if (table_approximate_with_excision.back() % 2 == 0 && table_equal.back() % 2 != 0) {
