@@ -5,15 +5,15 @@
 #include <fstream>
 #include <vector>
 #include <string>
-#include <limits>
+#include <list>
 #include <unordered_map>
 
 class Shift_Or {
     std::vector<unsigned long long int> masks;
-    std::vector<unsigned long long int> table_equal;
-    std::vector<unsigned long long int> table_approximate_with_replacement;
-    std::vector<unsigned long long int> table_approximate_with_excision;
-    std::vector<unsigned long long int> table_approximate_with_insert;
+    std::list<unsigned long long int> table_equal;
+    std::list<unsigned long long int> table_approximate_with_replacement;
+    std::list<unsigned long long int> table_approximate_with_excision;
+    std::list<unsigned long long int> table_approximate_with_insert;
     std::string needle;
     long long int max = 0;
     std::string text;
@@ -65,6 +65,10 @@ public:
             table_equal.push_back(((table_equal.back() >> 1) | alphabet_masks.at(current_char)));
             table_approximate_with_excision.push_back((table_equal.back() >> 1)
                                                       & ((table_approximate_with_excision.back() >> 1) | alphabet_masks.at(current_char)));
+            table_approximate_with_excision.pop_front();
+            table_approximate_with_insert.pop_front();
+            table_approximate_with_replacement.pop_front();
+            table_equal.pop_front();
             if (table_equal.back() % 2 == 0) {
                 answer_equals.push_back(i - needle.length() + 2);
                 if (i - needle.length() + 2 > 1) {
@@ -84,7 +88,6 @@ public:
             if (table_approximate_with_excision.back() % 2 == 0 && table_equal.back() % 2 != 0) {
                 answer_approximate_with_excision.push_back(i - needle.length() + 3);
             }
-
         }
         std::vector<std::vector<unsigned long long int> > answer;
         answer.push_back(answer_equals);
