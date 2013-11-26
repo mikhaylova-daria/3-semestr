@@ -4,17 +4,28 @@
 #include <unordered_map>
 #include <vector>
 #include <iostream>
-
+long int min(const long int &first, const long int& second) {
+    if (first < second) {
+        return first;
+    } else {
+        return second;
+    }
+}
 
 class BM {
     std::string needle;
     std::vector<long int> postfixes;
     std::vector<long int> prefixes;
+    std::vector<long int> suffix_offsets;
     std::unordered_map<char, std::vector<long int> > occurrence_char;
+
 
 public:
     BM(std::string _needle):needle(_needle) {
         pre_processing();
+        for (int i = 0; i < suffix_offsets.size(); ++i) {
+            std::cout<<suffix_offsets[i]<<std::endl;
+        }
     }
 
     ~BM(){}
@@ -34,7 +45,9 @@ public:
 private:
     void pre_processing() {
         postfixes = postfix_fun();
-        prefixes = prefix_fun();
+        prefixes = prefix_fun(needle);
+        suffix_offsets = suffix_offsets_function();
+        suffix_offsets_function();
         for (unsigned long i = 0; i < needle.length(); ++i) {
             std::unordered_map<char, std::vector<long int> > ::iterator itr = occurrence_char.find(needle.at(i));
             if (itr == occurrence_char.end()) {
@@ -48,29 +61,31 @@ private:
         return;
     }
 
-    std::vector<long int> postfix_fun() {
-        std::vector<long int> pi (needle.length(), 0);
-        for (long int i = needle.length() - 2; i >= 0; --i) {
-            long int j = pi[i + 1];
-            while (j > 0 && needle.at(i) != needle.at(needle.length() - j - 1)) {
-                j = pi[needle.length() - j];
-            }
-            if (needle.at(i) == needle.at(needle.length() - j - 1)) {
-                ++j;
-            }
-            pi[i] = j;
+
+    std::vector<long int> suffix_offsets_function() {
+        std::vector<long int> suff(needle.length() + 1, needle.length() - prefixes.back());
+        suff[0] = 1;
+        for (long int i = 1; i < needle.length(); ++i) {
+            long int j = postfixes[i];
+            suff[j]  = min(suff[j], i - postfixes[i] + 1);
         }
-        return pi;
+        return suff;
     }
 
-    std::vector<long int> prefix_fun() {
+    std::vector<long int> postfix_fun() {
         std::vector<long int> pi (needle.length(), 0);
-        for (long int i = 1; i < needle.length(); ++i) {
-            long int j = pi[i - 1];
-            while (j > 0 && needle.at(i) != needle.at(j)) {
+        std::string needle_reverse(needle.rbegin(), needle.rend());
+        return prefix_fun(needle_reverse);
+    }
+
+    std::vector<long int> prefix_fun(std::string str) {
+        std::vector<long int> pi (str.length(), 0);
+        long int j = 0;
+        for (long int i = 1; i < str.length(); ++i) {
+            while (j > 0 && str.at(i) != str.at(j)) {
                 j = pi[j - 1];
             }
-            if (needle.at(i) == needle.at(j)) {
+            if (str.at(i) == str.at(j)) {
                 ++j;
             }
             pi[i] = j;

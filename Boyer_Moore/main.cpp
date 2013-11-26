@@ -4,7 +4,7 @@ using namespace std;
 
 int main()
 {
-    BM a("abracadabra");
+    BM a("abrbabr"); //abrbabr
     //a.search(cin);
     cout << "Hello World!" << endl;
     return 0;
