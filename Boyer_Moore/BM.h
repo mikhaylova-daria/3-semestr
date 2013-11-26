@@ -4,6 +4,7 @@
 #include <unordered_map>
 #include <vector>
 #include <iostream>
+#include <list>
 long int min(const long int &first, const long int& second) {
     if (first < second) {
         return first;
@@ -23,21 +24,72 @@ class BM {
 public:
     BM(std::string _needle):needle(_needle) {
         pre_processing();
-        for (int i = 0; i < suffix_offsets.size(); ++i) {
-            std::cout<<suffix_offsets[i]<<std::endl;
-        }
     }
 
     ~BM(){}
 
     std::vector<unsigned long long> search(std::istream& istr) {
         std::vector<unsigned long long int> answer;
-        char current_char_of_text = istr.get();
-        long int current_pos_at_needle = needle.length() - 1;
-
+        std::list<char> substring_of_text;
+        for (int i = 0; i < needle.length(); ++i) {
+            if (istr.eof()) {
+                return answer;
+            }
+            substring_of_text.push_back(istr.get());
+        }
+        long int current_offset_in_needle = needle.length() - 1;
+        long int current_offset_in_text = 0;
+        long int shift;
+        std::list<char>::reverse_iterator itr_text = substring_of_text.rbegin();
+        std::unordered_map<char, std::vector<long int> >::iterator itr;
         while (!istr.eof()) {
-
-
+            while (current_offset_in_needle != 0) {
+                if (needle.at(current_offset_in_needle) == *(itr_text)) {
+                    --current_offset_in_needle;
+                    ++itr_text;
+                    if (current_offset_in_needle == 0) {
+                        break;
+                    }
+                } else {
+                    itr = occurrence_char.find(*itr_text);
+                    if (itr == occurrence_char.end()) {
+                        for (long int i = 0; i < needle.length(); ++i) {
+                            if (!istr.eof()) {
+                                substring_of_text.pop_front();
+                                substring_of_text.push_back(istr.get());
+                                ++current_offset_in_text;
+                            } else {
+                                return answer;
+                            }
+                        }
+                        current_offset_in_needle = needle.length() - 1;
+                        itr_text = substring_of_text.rbegin();
+                    } else {
+                        if (current_offset_in_needle == needle.length() - 1) {
+                            shift = needle.length() - itr->second.back() - 1;
+                        } else {
+                            shift = suffix_offsets[needle.length() - current_offset_in_needle - 1];
+                        }
+                        for (long int i = 0; i < shift; ++i) {
+                            if (!istr.eof()) {
+                                substring_of_text.pop_front();
+                                substring_of_text.push_back(istr.get());
+                                ++current_offset_in_text;
+                            } else {
+                                return answer;
+                            }
+                        }
+                        current_offset_in_needle = needle.length() - 1;
+                        itr_text = substring_of_text.rbegin();
+                    }
+                }
+            }
+            answer.push_back(current_offset_in_text);
+            substring_of_text.pop_front();
+            substring_of_text.push_back(istr.get());
+            ++current_offset_in_text;
+            current_offset_in_needle = needle.length() - 1;
+            itr_text = substring_of_text.rbegin();
         }
         return answer;
     }
