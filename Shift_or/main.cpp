@@ -10,6 +10,22 @@
 #include <unordered_set>
 #include <fstream>
 
+namespace my {
+
+class exception: public std::exception {
+private:
+    std::string _what;
+public:
+    exception(const char * _what) throw() {
+           this->_what = _what;
+    }
+    const char* what() const throw(){
+        return _what.c_str();
+    }
+    ~exception() throw(){}
+};
+}
+
 class Shift_Or {
     std::vector<unsigned long long int> masks;
     std::list<unsigned long long int> table_equal;
@@ -24,10 +40,13 @@ class Shift_Or {
 
 public:
     Shift_Or(std::string _needle, std::string alp) {
+        if (_needle.length() == 1 || _needle.length() > 63) {
+            throw (my::exception("Поиск для подстроки данной длины не осуществим"));
+        }
         needle = _needle;
         alphabet = alp;
         for (unsigned short i = 0; i < needle.length(); ++i) {
-            max  += (1 << i);
+            max += (1 << i);
         }
         pre_processing();
     }
@@ -54,14 +73,22 @@ public:
         mask = max;
         char current_char = istr.get();
         if (current_char == needle.at(0)) {
-            mask = (max ^ (1 << (needle.length() - 1)));
+            mask = (max >> 1);
         }
         table_equal.push_back(mask);
-        table_approximate_with_insert.push_back(mask);
-        table_approximate_with_excision.push_back(mask >> 1);
-        table_approximate_with_replacement.push_back(mask >> 1);
+        table_approximate_with_insert.push_back(((max >> 1) | alphabet_masks.find(current_char)->second));
+        table_approximate_with_excision.push_back(((max >> 1) | alphabet_masks.find(current_char)->second) & (mask >> 1));
+        table_approximate_with_replacement.push_back((max >> 1 | alphabet_masks.find(current_char)->second) & (max >> 1));
+        if (needle.length() == 1) {
+            if (table_equal.back() % 2 == 0) {
+                answer_equals.push_back(1);
+            }
+            if (table_approximate_with_replacement.back() % 2 == 0 && table_equal.back() % 2 != 0) {
+                    answer_approximate_with_replacement.push_back(1);
+            }
+        }
         bool flag = true;
-        for (unsigned long long i = 1; flag; ++i) {
+        for (unsigned long long i = 2; flag; ++i) {
             current_char = istr.get();
             if (!istr.eof() && (alphabet_masks.find(current_char) != alphabet_masks.end())) {
                 table_approximate_with_insert.push_back(table_equal.back()
@@ -75,23 +102,18 @@ public:
                 table_approximate_with_replacement.pop_front();
                 table_equal.pop_front();
                 if (table_equal.back() % 2 == 0) {
-                    answer_equals.push_back(i - needle.length() + 2);
-                    if (i - needle.length() + 2 > 1) {
-                        answer_approximate_with_insert.push_back(i - needle.length() + 1);
-                    }
+                    answer_equals.push_back(i - needle.length() + 1);
                 }
-                if (table_approximate_with_insert.back() % 2 == 0 && table_equal.back() % 2 != 0) {
-                    if (i - needle.length() + 1 > 0) {
-                        answer_approximate_with_insert.push_back(i - needle.length() + 1);
+                if (table_approximate_with_insert.back() % 2 == 0) {
+                    if (i != needle.length()) {
+                        answer_approximate_with_insert.push_back(i - needle.length());
                     }
                 }
                 if (table_approximate_with_replacement.back() % 2 == 0 && table_equal.back() % 2 != 0) {
-                    if (i - needle.length() + 1 > 0) {
-                        answer_approximate_with_replacement.push_back(i - needle.length() + 2);
-                    }
+                    answer_approximate_with_replacement.push_back(i - needle.length() + 1);//
                 }
-                if (table_approximate_with_excision.back() % 2 == 0 && table_equal.back() % 2 != 0) {
-                    answer_approximate_with_excision.push_back(i - needle.length() + 3);
+                if (table_approximate_with_excision.back() % 2 == 0) {
+                    answer_approximate_with_excision.push_back(i - needle.length() + 2);
                 }
             } else {
                 flag = false;
@@ -113,7 +135,9 @@ int main()
 {
     ifstream istr("/home/darya/OOP/Shift_or/input.txt");
 
-    Shift_Or so("abra", "acdbr");
+    //Shift_Or so("abab", "acdbr");
+    //Shift_Or so("ababa", "acdbr");
+    Shift_Or so("abbb", "acdbr");
     std::vector<std::vector<unsigned long long> >answer; //= so.search(std::cin);
     answer = so.search(istr);
     std::cout<<"equal:\n";
