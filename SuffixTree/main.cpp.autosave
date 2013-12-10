@@ -1,0 +1,128 @@
+#include <iostream>
+#include <unordered_map>
+#include <vector>
+#include <memory>
+
+
+class SuffixTree {
+    struct Node {
+        std::weak_ptr<Node> suffix_link;
+        std::shared_ptr<Edge> longest;
+        std::unordered_map<char, std::weak_ptr<Edge> > next_chars;
+    };
+
+    struct Edge {
+        std::shared_ptr<Node> child_node = new Node();
+        unsigned int start;
+        unsigned int finish;
+        bool isLeaf = true;
+        int* finish_ptr;
+        Edge(int _start, int* _finish_ptr): finish_ptr(_finish_ptr), start(_start){
+        }
+        Edge(int _start, std::weak_ptr<Edge> old_edge):  finish(old_edge.lock()->finish), start(_start){
+            finish_ptr = old_edge.lock()->finish_ptr;
+            isLeaf = old_edge.lock()->isLeaf;
+
+        }
+    };
+
+    struct State {
+        std::shared_ptr<Edge> current_edge;
+        int index;
+    };
+    State current_pos;
+    //int index = 0;
+    std::shared_ptr<Node> root;
+    int finish_for_leafs = 0;
+    std::shared_ptr<Edge> longest;
+    std::vector<char> text;
+
+public:
+    SuffixTree() {
+        root = new Node();
+    }
+
+    void append(char current_char) {
+        ++finish_for_leafs;
+        if (!current_pos.current_edg->isLeaf) {
+            if (current_pos.index + current_pos.current_edge->start != current_pos.current_edge->finish + 1) {
+                if (current_char == text.at(current_pos.current_edge->start + current_pos.index)) {
+                    ++current_pos.index;
+                } else {
+                    //fork from mid of edge
+                }                
+            } else {
+                std::unordered_map<char, std::shared_ptr<Edge> >::iterator itr;
+                itr = current_pos.current_edge->child_node->next_chars.find(current_char);
+                if (itr != current_pos.current_edge->child_node->next_chars.end()) {
+                    //fork from node
+                } else {
+                    current_pos.current_edge = itr->second;
+                    current_pos.index = 1;// уже считали первую букву на ребре
+                }
+            }
+        } else {
+            //утв.: мы никогда не достигнем конца листа, 
+            //т.к. он увеличивается при добавлении элемента на 1, а мы двигаемся по его префикса на 1
+            if (current_pos.index + current_pos.current_edge->start != finish_for_leafs) {
+                if (current_char == text.at(current_pos.current_edge->start + current_pos.index)) {
+                    ++current_pos.index;
+                } else {
+                    //fork from mid of edge
+                }                
+            } else {
+                std::unordered_map<char, std::shared_ptr<Edge> >::iterator itr;
+                itr = current_pos.current_edge->child_node->next_chars.find(current_char);
+                if (itr != current_pos.current_edge->child_node->next_chars.end()) {
+                    //fork from node
+                } else {
+                    current_pos.current_edge = itr->second;
+                    current_pos.index = 1;// уже считали первую букву на ребре
+                }
+        }
+
+        std::unordered_map<char, std::shared_ptr<Edge> >::iterator itr = root->next_chars.find(current_char);
+        
+//            if (current_char == text.at(current_pos.current_edge->start + current_pos.index)) {
+//                ++current_pos.index;
+//            } else {
+//                if (itr == root.end()) {
+//                    root->next_chars.insert(std::make_pair<char, std::shared_ptr<Node> >(current_char, new Edge(finish_for_leafs, &finish_for_leafs)));
+//                } else {
+//                    current_pos.current_edge = itr->second;
+//                    current_pos.index = 1;
+//                }
+//        }
+    }
+    
+//    void add_to_root(char current_char) {
+//        if (root->next_chars.find(current_char) == root->next_chars.end()) {
+//            root->next_chars.insert(std::pair<char, std::shared_ptr<Edge> > (current_char, new Edge(finish_for_leafs, &finish_for_leafs)));
+//        }
+//    }
+
+    void fork(std::weak_ptr<Edge> edge, int index) {
+        std::shared_ptr<Edge> ptr_new_edge(edge.lock()->start - index, edge);
+        std::shared_ptr<Edge> new_leaf(new Edge(text.size(), &finish_for_leafs));
+        //новое ребро - листовое, старое ребро становится внутренним + появляется ещё один однобуквенный лист на развилке:
+        edge.lock()->finish = index;
+        edge.lock()->isLeaf = false;
+        //развилка:
+        edge.lock()->child_node->next_chars.insert(
+                    std::make_pair<char, std::shared_ptr<Edge> >(text[edge.lock()->start - index], ptr_new_edge.lock);
+        edge.lock()->child_node->next_chars.insert(std::make_pair<char, std::shared_ptr<Edge> >(text.back(), new_leaf));
+
+    }
+};
+
+
+
+
+using namespace std;
+
+int main()
+{
+    cout << "Hello World!" << endl;
+    return 0;
+}
+
