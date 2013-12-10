@@ -65,15 +65,19 @@ public:
                 if (current_char == text.at(current_pos.current_edge->start + current_pos.index - 1)) {
                     ++current_pos.index;
                 } else {
-                    //fork from mid of edge
-                    
+                    fork_from_edge();                  
                     // утв.: после форка current_pos должно указывать на что-то вроде root
                 }                
             } else {
                 std::unordered_map<char, std::shared_ptr<Edge> >::iterator itr;
                 itr = current_pos.current_edge->child_node->next_chars.find(current_char);
-                if (itr != current_pos.current_edge->child_node->next_chars.end()) {
+                if (itr == current_pos.current_edge->child_node->next_chars.end()) {
                     //fork from node
+                    std::weak_ptr<Node> node = current_pos.current_edge->child_node;
+                    std::shared_ptr<Edge> new_leaf(new Edge(node, text.size(), &finish_for_leafs));
+                    node->next_chars.insert(std::pair<char, std::shared_ptr<Edge> > (current_char, new_leaf));
+                    add_to_root(text.back());
+                    
                 } else {
                     current_pos.current_edge = itr->second;
                     current_pos.index = 1;// уже считали первую букву на ребре
@@ -130,11 +134,11 @@ public:
             int index = current_pos.current_edge->finish - current_pos.current_edge->start;
             char root_char = text.at(current_pos.current_edge->start); // вторая буква на ребре;
             std::shared_ptr<Edge> current_edge;
-            while (index > 1) {
+            while (index > 0) {
                 std::weak_ptr<Edge> other_branch_edge = other_branch_node.find(root_char)->second;
                 new_node->suffix_link = other_branch_edge.lock()->split(index);
                 --index;
-                char root_char = text.at(other_branch_edge->start);
+                root_char = text.at(other_branch_edge->start);
                 new_node = new_node->suffix_link;
                 std::shared_ptr<Edge> new_leaf(new Edge(new_node, text.size(), &finish_for_leafs));
                 new_node->next_chars.insert(std::pair<char, std::shared_ptr<Edge> > (current_char, new_leaf));
