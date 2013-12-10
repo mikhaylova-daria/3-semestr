@@ -8,17 +8,24 @@ class SuffixTree {
     struct Node {
         std::weak_ptr<Node> suffix_link;
         std::shared_ptr<Edge> longest;
+        std::weak_ptr<Edge> parent_edge;
         std::unordered_map<char, std::shared_ptr<Edge> > next_chars;
     };
 
     struct Edge {
         std::shared_ptr<Node> child_node = new Node();
+        std::weak_ptr<Node> parent_node;
         unsigned int start;
         unsigned int finish;
         bool isLeaf = true;
         int* finish_ptr;
-        Edge() {}
-        create_edge(int _start, int* _finish_ptr): finish_ptr(_finish_ptr), start(_start){
+        Edge() {
+            child_node->parent_edge = this;
+        }
+        
+        create_edge(std::weak_ptr<Node> parent, int _start, int* _finish_ptr): finish_ptr(_finish_ptr), 
+                                                                               start(_start),
+                                                                               parent_node(parent){
         }
         std::shared_ptr<Node> split(int index) { // новое ребро дальше от root
             std::shared_ptr<Edge> new_edge(new Edge());
@@ -28,7 +35,8 @@ class SuffixTree {
             new_edge->finish = finish;
             isLeaf = false;
             finish = start + index - 1;
-            child_node.next_chars.insert(std::pair<char, std::shared_ptr<Edge> > (text.at(new_edge->start), new_edge));
+            new_edge->parent_node = child_node;
+            child_node.next_chars.insert(std::pair<char, std::shared_ptr<Edge> > (text.at(new_edge->start - 1), new_edge));
             return child_node;
         }
     };
@@ -46,6 +54,7 @@ class SuffixTree {
 public:
     SuffixTree() {
         root = new Node();
+        root->suffix_link = root;
     }
 
     void append(char current_char) {
@@ -94,26 +103,48 @@ public:
 //        }
     }
     
-//    void add_to_root(char current_char) {
-//        if (root->next_chars.find(current_char) == root->next_chars.end()) {
-//            root->next_chars.insert(std::pair<char, std::shared_ptr<Edge> > (current_char, new Edge(finish_for_leafs, &finish_for_leafs)));
-//        }
-//    }
+    void add_to_root(char current_char) {
+        if (root->next_chars.find(current_char) == root->next_chars.end()) {
+            root->next_chars.insert(std::pair<char, std::shared_ptr<Edge> > (current_char, new Edge(finish_for_leafs, &finish_for_leafs)));
+        }
+    }
 
-    void fork_from_edge() {
-        
+    void fork_from_edge() {   
         std::shared_ptr<Node> new_node = 
-                current_pos.current_edge->split(current_pos.index, text.back());
-        std::shared_ptr<Edge> new_leaf(new Edge(text.size(), &finish_for_leafs));
+                current_pos.current_edge->split(current_pos.index);
+        std::shared_ptr<Edge> new_leaf(new Edge(new_node, text.size(), &finish_for_leafs));
+        new_node->next_chars.insert(std::pair<char, std::shared_ptr<Edge> > (current_char, new_leaf));
+        add_to_root(text.back());
+        char root_char =text.at(current_pos.current_edge->start - 1);
+        std::weak_ptr<Node> other_branch_node = new_node->parent_edge.lock()->parent_node->suffix_link;
+        if (other_branch_node != root) {
+            while (other_branch_node != root) {
+                std::weak_ptr<Edge> other_branch_edge = other_branch_node.find(root_char)->second;
+                new_node->suffix_link = other_branch_edge.lock()->split(current_pos.index);
+                new_node = new_node->suffix_link;
+                std::shared_ptr<Edge> new_leaf(new Edge(new_node, text.size(), &finish_for_leafs));
+                new_node->next_chars.insert(std::pair<char, std::shared_ptr<Edge> > (current_char, new_leaf));
+                other_branch_node = other_branch_edge.lock()->parent_node->suffix_link;
+            }
+        } else {
+            int index = current_pos.current_edge->finish - current_pos.current_edge->start;
+            char root_char = text.at(current_pos.current_edge->start); // вторая буква на ребре;
+            std::shared_ptr<Edge> current_edge;
+            while (index > 1) {
+                std::weak_ptr<Edge> other_branch_edge = other_branch_node.find(root_char)->second;
+                new_node->suffix_link = other_branch_edge.lock()->split(index);
+                --index;
+                char root_char = text.at(other_branch_edge->start);
+                new_node = new_node->suffix_link;
+                std::shared_ptr<Edge> new_leaf(new Edge(new_node, text.size(), &finish_for_leafs));
+                new_node->next_chars.insert(std::pair<char, std::shared_ptr<Edge> > (current_char, new_leaf));
+                other_branch_node = other_branch_edge.lock()->parent_node->suffix_link;//всегда root по-хорошему
+            }
+        }
         
-        //новое ребро - листовое, старое ребро становится внутренним + появляется ещё один однобуквенный лист на развилке:
-        edge.lock()->finish = index;
-        edge.lock()->isLeaf = false;
-        //развилка:
-        edge.lock()->child_node->next_chars.insert(
-                    std::make_pair<char, std::shared_ptr<Edge> >(text[edge.lock()->start - index], ptr_new_edge.lock);
-        edge.lock()->child_node->next_chars.insert(std::make_pair<char, std::shared_ptr<Edge> >(text.back(), new_leaf));
-
+        // из текущей вершины шаг к предшествующей вершине, из неё по суффиксной стрелке вбок , вниз по нужной букве
+        //на размер индекса
+       // разветвление и т.д, пока не придём в root
     }
 };
 
