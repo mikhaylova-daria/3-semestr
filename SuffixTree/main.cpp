@@ -10,7 +10,6 @@ class SuffixTree {
     struct Edge;
     struct Node {
         std::weak_ptr<Node> suffix_link;
-        //std::shared_ptr<Edge> longest;
         std::weak_ptr<Edge> parent_edge;
         std::unordered_map<char, std::shared_ptr<Edge> > next_chars;
     };
@@ -71,12 +70,18 @@ public:
         add_to_root(text.back());
         if (current_pos.inRoot) {
             std::weak_ptr<Edge> root_edge_since_cur_char = root->next_chars.find(text.back())->second;
-            int length_of_suf = root_edge_since_cur_char.lock()->start - root_edge_since_cur_char.lock()->finish + 1;
+            int finish = root_edge_since_cur_char.lock()->finish;
+            if (root_edge_since_cur_char.lock()->isLeaf) {
+                finish = finish_for_leafs;
+            }
+            int length_of_suf = root_edge_since_cur_char.lock()->start - finish + 1;
+           //std::cout<<length_of_suf;
             if (length_of_suf != 1) {
                 current_pos.current_edge = root_edge_since_cur_char.lock();
                 current_pos.index = 1;
                 current_pos.inRoot = false;
             }
+            return;
         }
         if (!current_pos.current_edge->isLeaf) {
             if (current_pos.index + current_pos.current_edge->start != current_pos.current_edge->finish + 1) {
@@ -174,6 +179,32 @@ public:
         //на размер индекса
        // разветвление и т.д, пока не придём в root
     }
+    void print_tree() {
+        print(root);
+    }
+
+private:
+    void print(std::weak_ptr<Node> node) {
+        std::string suffix;
+        int length;
+        int count_tab = 0;
+        std::unordered_map<char, std::shared_ptr<Edge> > ::iterator itr;
+        for (itr = node.lock()->next_chars.begin(); itr != node.lock()->next_chars.end(); ++itr) {
+            ++count_tab;
+            if (itr->second->isLeaf) {
+                itr->second->finish = finish_for_leafs;
+            }
+            for (int i = itr->second->start - 1; i != itr->second->finish; ++i) {
+                std::cout<<text.at(i)<<" ";
+            }
+            std::cout<<std::endl;
+            if (!itr->second->isLeaf) {
+                print(itr->second->child_node);
+            }
+            --count_tab;
+        }
+    }
+
 };
 
 
@@ -183,6 +214,14 @@ using namespace std;
 
 int main()
 {
+    SuffixTree tree;
+    char current;
+    cin>> current;
+    while (current != '!') {
+        tree.append(current);
+        cin>>current;
+    }
+    tree.print_tree();
     cout << "Hello World!" << endl;
     return 0;
 }
