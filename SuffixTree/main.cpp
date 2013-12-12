@@ -22,15 +22,19 @@ class SuffixTree {
         bool isLeaf = true;
         int* finish_ptr;
         Edge() {
-            std::shared_ptr<Node> ptr(new Node());
-            std::shared_ptr<Edge> ptr_par(this);
-            child_node = ptr;
-            child_node->parent_edge = ptr_par;
+            //std::shared_ptr<Node> ptr(new Node());
+            //std::shared_ptr<Edge> ptr_par(this);
+            //child_node = ptr;
+            //child_node->parent_edge = ptr_par;
         }
 
         Edge(std::weak_ptr<Node> parent, int _start, int* _finish_ptr): finish_ptr(_finish_ptr),
                                                                                start(_start),
                                                                                parent_node(parent){
+            std::shared_ptr<Node> ptr(new Node());
+            std::shared_ptr<Edge> ptr_par(this);
+            child_node = ptr;
+            child_node->parent_edge = ptr_par;
         }
         std::shared_ptr<Node> split(int index, const std::vector<char> &text) { // новое ребро дальше от root
             std::shared_ptr<Edge> new_edge(new Edge());
@@ -41,7 +45,13 @@ class SuffixTree {
             isLeaf = false;
             finish = start + index - 1;
             new_edge->parent_node = child_node;
-            child_node->next_chars.insert(std::pair<char, std::shared_ptr<Edge> > (text.at(new_edge->start - 1), new_edge));
+            std::pair<char, std::shared_ptr<Edge> > p(text.at(new_edge->start - 1), new_edge);
+            std::shared_ptr<Node> ptr(new Node());
+            ptr->next_chars.insert(p);
+            child_node = ptr;
+            std::shared_ptr<Edge> ptr_par(this);
+            child_node->parent_edge = ptr_par;
+       //     std::cout<<"$"<<text.at(new_edge->start - 1)<<std::endl;
             return child_node;
         }
     };
@@ -62,12 +72,15 @@ public:
         std::shared_ptr<Node> ptr(new Node());
         root = ptr;
         root->suffix_link = root;
+        current_pos.index = 1;
     }
 
     void append(char current_char) {
         text.push_back(current_char);
         ++finish_for_leafs;
+        std::cout<<finish_for_leafs<<current_char<<std::endl;
         add_to_root(text.back());
+       // std::cout<<"для х: "<<root->next_chars.find('x')->second->start<<std::endl;
         if (current_pos.inRoot) {
             std::weak_ptr<Edge> root_edge_since_cur_char = root->next_chars.find(text.back())->second;
             int finish = root_edge_since_cur_char.lock()->finish;
@@ -75,7 +88,7 @@ public:
                 finish = finish_for_leafs;
             }
             int length_of_suf = root_edge_since_cur_char.lock()->start - finish + 1;
-           //std::cout<<length_of_suf;
+            std::cout<<root_edge_since_cur_char.lock()->start<<"*"<<text.back()<<" "<<root_edge_since_cur_char.lock().get()<<std::endl;
             if (length_of_suf != 1) {
                 current_pos.current_edge = root_edge_since_cur_char.lock();
                 current_pos.index = 1;
@@ -115,8 +128,13 @@ public:
         } else {
             //утв.: мы никогда не достигнем конца листа,
             //т.к. он увеличивается при добавлении элемента на 1, а мы двигаемся по его префикса на 1
-                if (current_char == text.at(current_pos.current_edge->start + current_pos.index - 1)) {
+            std::cout<<current_pos.current_edge->start<<" ";
+            std::cout<<current_char<<" ";
+            std::cout<<current_pos.index<<std::endl;
+               if (current_char == text.at(current_pos.current_edge->start + current_pos.index - 1)) {
                     ++current_pos.index;
+                    std::cout<<current_pos.current_edge->start<<" ";
+                    std::cout<<current_pos.index<<std::endl;
                 } else {
                     fork_from_edge();
                     check_current_pos();
@@ -138,14 +156,18 @@ public:
 
     void add_to_root(char current_char) {
         if (root->next_chars.find(current_char) == root->next_chars.end()) {
-            root->next_chars.insert(std::pair<char, std::shared_ptr<Edge> > (current_char,
-                                                                             std::shared_ptr<Edge> (new Edge(root, finish_for_leafs, &finish_for_leafs))));
+            root->next_chars.insert(std::pair<char, std::shared_ptr<Edge> >
+                                    (current_char,std::shared_ptr<Edge>
+                                     (new Edge(root, finish_for_leafs, &finish_for_leafs))));
         }
     }
 
     void fork_from_edge() {
         std::shared_ptr<Node> new_node =
                 current_pos.current_edge->split(current_pos.index, text);
+      //  std::cout<<"@"<<std::endl;
+        print(new_node);
+        std::cout<<"@"<<std::endl;
         std::shared_ptr<Edge> new_leaf(new Edge(new_node, text.size(), &finish_for_leafs));
         new_node->next_chars.insert(std::pair<char, std::shared_ptr<Edge> > (text.back(), new_leaf));
         char root_char =text.at(current_pos.current_edge->start - 1);
@@ -194,7 +216,7 @@ private:
             if (itr->second->isLeaf) {
                 itr->second->finish = finish_for_leafs;
             }
-            for (int i = itr->second->start - 1; i != itr->second->finish; ++i) {
+            for (int i = itr->second->start - 1; i < itr->second->finish; ++i) {
                 std::cout<<text.at(i)<<" ";
             }
             std::cout<<std::endl;
