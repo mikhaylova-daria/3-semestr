@@ -138,14 +138,18 @@ public:
         std::weak_ptr<Edge> root_edge_since_cur_char = root->next_chars.find(text.back())->second;
         if (root_edge_since_cur_char.lock()->isLeaf) {
             root_edge_since_cur_char.lock()->finish = finish_for_leafs;
-        }
-        int length_of_suf = root_edge_since_cur_char.lock()->start - root_edge_since_cur_char.lock()->finish + 1;
-        if (length_of_suf > 1) {
+            int length_of_suf = root_edge_since_cur_char.lock()->start - root_edge_since_cur_char.lock()->finish + 1;
+            if (length_of_suf > 1) {
+                current_pos.current_edge = root_edge_since_cur_char.lock();
+                current_pos.index = 1;
+                current_pos.inRoot = false;
+            } else {
+                current_pos.inRoot = true;
+            }
+        } else {
             current_pos.current_edge = root_edge_since_cur_char.lock();
             current_pos.index = 1;
             current_pos.inRoot = false;
-        } else {
-            current_pos.inRoot = true;
         }
     }
 
