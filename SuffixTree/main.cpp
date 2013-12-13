@@ -214,6 +214,35 @@ public:
         print(root, suffix, pos);
     }
 
+
+    bool contains(const std::string& substr) {
+        std::weak_ptr<Node> node = root;
+        std::weak_ptr<Edge> edge;
+        std::unordered_map<char, std::shared_ptr<Edge> >::iterator itr;
+        int i = 0;
+        for (; i < substr.size(); ++i) {
+            itr = node.lock()->next_chars.find(substr.at(i));
+            if (itr == node.lock()->next_chars.end()) {
+                return false;
+            }
+            edge = itr->second;
+            int length_edge = edge.lock()->finish - edge.lock()->start + 1;
+            int j = 0;
+            for (; j < length_edge; ++j) {
+                if (i + j >= substr.size()) {
+                    return true;
+                }
+                if (text.at(edge.lock()->start + j - 1) != substr.at(i + j)) {
+                    return false;
+                }
+            }
+            --j;
+            i += j;
+            node = edge.lock()->child_node;
+        }
+        return true;
+    }
+
 private:
     void print(std::weak_ptr<Node> node, std::vector<char>& suffix, std::vector<int>& pos) {
         std::unordered_map<char, std::shared_ptr<Edge> > ::iterator itr;
@@ -242,7 +271,7 @@ private:
                 for (int i = 0; i < suffix.size(); ++i) {
                     std::cout<<suffix.at(i);
                 }
-             //   std::cout<<std::endl;
+//                std::cout<<std::endl;
 //                for (int i = 0; i < suffix.size(); ++i) {
 //                    std::cout<<pos.at(i) + 1;
 //                }
@@ -279,6 +308,7 @@ int main()
         cin>>current;
     }
     tree.append('\0');
+    std::cout<<tree.contains("abra")<<std::endl;
     tree.print_tree();
     return 0;
 }
