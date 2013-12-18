@@ -18,9 +18,9 @@ int main()
     array.push_back(0);
     array.push_back(7);
     array.push_back(1);
-    SparseTable<int> sp(array, &min_f, -1);
+    SparseTableFCB<int> sp(array);
     sp.print();
-    cout <<sp.request(1, 0)<< endl;
+//    cout <<sp.request(1, 0)<< endl;
     return 0;
 }
 
