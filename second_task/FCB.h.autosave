@@ -76,7 +76,8 @@ public:
 
 
     std::pair<int, int> query(int l, int r) {
-
+        std::pair<int, int> n1, n2, n3;
+        
     }
 
 

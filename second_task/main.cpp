@@ -1,5 +1,12 @@
 #include <iostream>
+#include <iostream>
+#include <vector>
+#include <cmath>
+#include <unordered_map>
+#include <memory>
+#include <limits>
 #include "sparse_table.h"
+#include "FCB.h"
 using namespace std;
 
 int main()
@@ -18,7 +25,7 @@ int main()
     array.push_back(0);
     array.push_back(7);
     array.push_back(1);
-    SparseTableFCB<int> sp(array);
+    SparseTable<int> sp(array, &min_f);
     sp.print();
 //    cout <<sp.request(1, 0)<< endl;
     return 0;

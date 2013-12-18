@@ -1,11 +1,6 @@
 #ifndef SPARSE_TABLE_H
 #define SPARSE_TABLE_H
-#include <iostream>
-#include <vector>
-#include <cmath>
-#include <unordered_set>
-#include <memory>
-#include <limits>
+
 namespace my {
 
     class exception: public std::exception {
@@ -22,9 +17,9 @@ namespace my {
     };
 }
 
-template <typename T = int>
+template <class T = int>
 class SparseTable {
-    std::vector<T> log_for_length;
+    std::vector<int> log_for_length;
     std::vector<T> array;
     std::vector<std::vector<T> > sparse_table;
     T (*func) (T, T);
