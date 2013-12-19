@@ -39,7 +39,8 @@ public:
         if (l < 0 || r >= array.size()) {
             throw (my::exception("выход за границы массива"));
         }
-        return func(sparse_table[log_for_length[r - l]][l], sparse_table[log_for_length[r - l]][r - (1 >> log_for_length[r - l]) + 1]);
+        int log = log_for_length[r - l + 1];
+        return func(sparse_table[log][l], sparse_table[log][r - (1 << log) + 1]);
     }
 
     void print() {
@@ -112,7 +113,8 @@ public:
         if (l < 0 || r >= array.size()) {
             throw (my::exception("выход за границы массива"));
         }
-        return func(sparse_table[log_for_length[r - l]][l], sparse_table[log_for_length[r - l]][r - (1 >> log_for_length[r - l]) + 1]);
+        int log = log_for_length[r - l + 1];
+        return func(sparse_table[log][l], sparse_table[log][r - (1 << log) + 1]);
     }
 
     void print() {
@@ -156,7 +158,6 @@ private:
         }
 
     }
-
 
 };
 
