@@ -7,5 +7,8 @@ SOURCES += main.cpp
 
 HEADERS += \
     sparse_table.h \
-    FCB.h
+    FCB.h \
+    LCAtoRMQ.h \
+    treap.h \
+    libr.h
 
