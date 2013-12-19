@@ -42,18 +42,43 @@ public:
                 }
                 if (x != root) {
                     current->child_l = x->child_r;
-                    current->child_l->parent = current;
+                    x->child_r->parent = current;
                     current->parent = x;
                     x->child_r = current;
                 } else {
                     current->child_l = root;
                     root -> parent = current;
                     root = current;
+                    root->parent = root;
                 }
             }
+            last_added = current;
         }
     }
 
+    void print() {
+        std::cout<<"root: ("<<root->key<<"; "<<root->priority<<")"<<std::endl;
+        std::vector<std::weak_ptr<Node> > children;
+        std::vector<std::weak_ptr<Node> > buf;
+        children.push_back(root);
+        while (!children.empty()) {
+            typename std::vector<std::weak_ptr<Node> >::iterator itr;
+            for (itr = children.begin(); itr != children.end(); ++itr) {
+                if ((*itr).lock()->child_l != NIL) {
+                    buf.push_back((*itr).lock()->child_l);
+                    std::cout<<"("<<(*itr).lock()->child_l->key<<"; "<<(*itr).lock()->child_l->priority<<"l)p("<<(*itr).lock()->key<<";"<<(*itr).lock()->priority<<")"<<" ";
+                }
+                if ((*itr).lock()->child_r != NIL) {
+                    buf.push_back((*itr).lock()->child_r);
+                    std::cout<<"("<<(*itr).lock()->child_r->key<<"; "<<(*itr).lock()->child_r->priority<<"r)p("<<(*itr).lock()->key<<";"<<(*itr).lock()->priority<<")"<<'\t';
+                }
+            }
+            std::cout<<std::endl;
+            children = buf;
+            buf.clear();
+        }
+
+    }
 
     std::shared_ptr<Node> insert(K key, P priority ,V value = 0) {
         std::shared_ptr <Node> new_node = std::shared_ptr<Node>(new Node(key, priority,  value));
