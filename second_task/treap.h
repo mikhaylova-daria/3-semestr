@@ -1,7 +1,8 @@
 #ifndef TREAP_H
 #define TREAP_H
 
-template <typename K, typename P,  typename Compare = std::less<P>, typename V = int>
+class LCA;
+template <typename K, typename P,  typename Compare = std::greater<P>, typename V = int>
 class Treap {
     struct Node {
         std::shared_ptr<Node> child_l;
@@ -21,7 +22,7 @@ class Treap {
     std::shared_ptr<Node> last_added;
 
 public:
-
+    friend class LCA;
     Treap(K (*_dec)(K)): dec(_dec) {
     }
 
