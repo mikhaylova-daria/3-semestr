@@ -1,10 +1,12 @@
 #ifndef TREAP_H
 #define TREAP_H
+
 template <typename K, typename P,  typename Compare = std::less<P>, typename V = int>
 class Treap {
     struct Node {
         std::shared_ptr<Node> child_l;
         std::shared_ptr<Node> child_r;
+        std::weak_ptr<Node> parent;
         K key;
         P priority;
         V value;
@@ -15,17 +17,51 @@ class Treap {
     std::shared_ptr<Node> root = NIL;
     static std::shared_ptr<Node> NIL;
     K (*dec) (K);
-public :
+    //std::shared_ptr<Node> current;
+    std::shared_ptr<Node> last_added;
+
+public:
 
     Treap(K (*_dec)(K)): dec(_dec) {
     }
 
-    void insert(K key, P priority ,V value = 0) {
+    Treap (std::vector<K> keys, std::vector<P> priorities, K (*_dec)(K)): dec(_dec) {
+        root = std::shared_ptr<Node>(new Node(keys[0], priorities[0]));
+        std::shared_ptr<Node> last_added = root;
+        root->parent = root;
+        std::shared_ptr<Node> current;
+        for (int i = 1; i < keys.size(); ++i) {
+            current = std::shared_ptr<Node>(new Node(keys[i], priorities[i]));
+            if (!comp(last_added->priority, priorities[i])) {
+                current->parent = last_added;
+                last_added->child_r = current;
+            } else {
+                std::shared_ptr<Node> x = last_added->parent.lock();
+                while (x != root && comp(x->priority, current->priority)) {
+                    x = x->parent.lock();
+                }
+                if (x != root) {
+                    current->child_l = x->child_r;
+                    current->child_l->parent = current;
+                    current->parent = x;
+                    x->child_r = current;
+                } else {
+                    current->child_l = root;
+                    root -> parent = current;
+                    root = current;
+                }
+            }
+        }
+    }
+
+
+    std::shared_ptr<Node> insert(K key, P priority ,V value = 0) {
         std::shared_ptr <Node> new_node = std::shared_ptr<Node>(new Node(key, priority,  value));
         std::shared_ptr <Node> t1, t2;
         split(root, key, t1, t2);
         root = merge(t1, new_node);
         root = merge(root, t2);
+        return new_node;
     }
 
     void remove(K key) {
@@ -48,9 +84,6 @@ public :
         return result;
     }
 
-    void print() {
-
-    }
 
 private :
     std::shared_ptr<Node> merge(std::shared_ptr<Node> a_root, std::shared_ptr<Node> b_root) {
@@ -77,9 +110,6 @@ private :
             b = start;
         }
     }
-
-
-
 };
 
 template <typename K, typename P, typename Compare, typename V>
