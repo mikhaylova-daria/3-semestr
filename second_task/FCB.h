@@ -40,7 +40,11 @@ class FCB {
         }
 
         void next(int i) {
-            current_norm_block.push_back(i);
+            if (current_norm_block.empty()) {
+                current_norm_block.push_back(0);
+            } else {
+                current_norm_block.push_back(current_norm_block.back() + i);
+            }
             if (i == -1) {
                 if (current.lock()->child_m1.use_count() == 0) {
                     current.lock()->child_m1 = std::shared_ptr<Node>(new Node());
@@ -71,6 +75,7 @@ class FCB {
     std::shared_ptr<SparseTableFCB<int> >sp_t_if_short;
 
 public:
+
     FCB(std::vector<int> _array) {
         array = _array;
         blocks_split();
@@ -78,7 +83,6 @@ public:
             sp_t = std::shared_ptr<SparseTable<std::pair<int, int> > >(new SparseTable<std::pair<int, int> > (blocks_min, &min_p));
         }
     }
-
 
     std::pair<int, int> query(int l, int r) {
         int block_size = (int)(log2(array.size()) / 2);
@@ -135,7 +139,11 @@ private:
                 if (array[i + j] < min.first) {
                     min = std::pair<int, int>(array[i + j], i + j);
                 }
-                mask_tree.next(array[i + j] - array[i]);
+                if (j == 0) {
+                    mask_tree.next(0);
+                } else {
+                    mask_tree.next(array[i + j] - array[i + j - 1]);
+                }
             }
             sp_t_for_inside_of_block.push_back(mask_tree.in_begin());
             blocks_min.push_back(min);
@@ -144,13 +152,18 @@ private:
         int first;
         if (i < array.size()) {
             first = array[i];
-        }
-        while (i < array.size()) {
             min = std::pair<int, int> (array[i], i);
             if (array[i] < min.first) {
                 min = std::pair<int, int>(array[i], i);
             }
-            mask_tree.next(array[i] - first);
+            mask_tree.next(0);
+            ++i;
+        }
+        while (i < array.size()) {
+            if (array[i] < min.first) {
+                min = std::pair<int, int>(array[i], i);
+            }
+            mask_tree.next(array[i] - array[i - 1]);
             ++i;
         }
         sp_t_for_inside_of_block.push_back(mask_tree.in_begin());

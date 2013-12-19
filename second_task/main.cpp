@@ -11,17 +11,17 @@ using namespace std;
 int main()
 {
     std::vector<int> array;
-    for (int i = 0; i < 200; ++i) {
+    for (int i = 0; i < 64; ++i) {
         if (i % 17 == 0) {
-            array.push_back(4);
+            array.push_back(i);
         } else {
-            array.push_back(3);
+            array.push_back(i);
         }
     }
-    array.push_back(4);
-    array.push_back(4);
-    array.push_back(4);
-    array.push_back(4);
+//    array.push_back(4);
+//    array.push_back(4);
+//    array.push_back(4);
+//    array.push_back(4);
 //    array.push_back(2);
 //    array.push_back(5);
 //    array.push_back(9);
