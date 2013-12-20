@@ -10,5 +10,6 @@ HEADERS += \
     FCB.h \
     LCAtoRMQ.h \
     treap.h \
-    libr.h
+    libr.h \
+    RMQtoLCA.h
 

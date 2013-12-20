@@ -9,6 +9,7 @@
 #include "FCB.h"
 #include "treap.h"
 #include "LCAtoRMQ.h"
+#include "RMQtoLCA.h"
 using namespace std;
 int dec(int i) {
     return i - 1;
@@ -16,24 +17,24 @@ int dec(int i) {
 
 int main()
 {
-//    std::vector<int> array;
-//    for (int i = 64; i >= 0; --i) {
-//        if (i % 17 == 0) {
-//            array.push_back(i);
-//        } else {
-//            array.push_back(i);
-//        }
-//    }
-////    array.push_back(4);
-////    array.push_back(4);
-////    array.push_back(4);
-////    array.push_back(4);
-////    array.push_back(2);
-////    array.push_back(5);
-////    array.push_back(9);
-////    array.push_back(0);
-////    array.push_back(7);
-////    array.push_back(1);
+    std::vector<int> array;
+    for (int i = 64; i >= 0; --i) {
+        if (i % 17 == 0) {
+            array.push_back(i);
+        } else {
+            array.push_back(i);
+        }
+    }
+    array.push_back(4);
+    array.push_back(4);
+    array.push_back(4);
+    array.push_back(4);
+    array.push_back(2);
+    array.push_back(5);
+    array.push_back(9);
+    array.push_back(0);
+    array.push_back(7);
+    array.push_back(1);
 
 //    SparseTable<int> sp(array, &min_f);
 //    SparseTableFCB<int> sp2(array);
@@ -67,15 +68,17 @@ int main()
 //    treap.print();
 //    //treap.remove(2);
 //    std::cout<<treap.find(15)->priority<<std::endl;
-    std::shared_ptr<Treap<int, int> > treap_ptr(new Treap<int, int>(keys, pr, dec));
-    treap_ptr->print();
-    std::shared_ptr<Treap<int, int>::Node> n1, n2, n3;
+//    std::shared_ptr<Treap<int, int> > treap_ptr(new Treap<int, int>(keys, pr, dec));
+//    treap_ptr->print();
+//    std::shared_ptr<Treap<int, int>::Node> n1, n2, n3;
 
-    n1 = treap_ptr->find(10);
-    n2 = treap_ptr->find(29);
-    LCA lca(treap_ptr);
-    n3 = lca.request(n1, n2);
-    std::cout<<"("<<n3->key<<"; "<<n3->priority<<")"<<std::endl;
+//    n1 = treap_ptr->find(10);
+//    n2 = treap_ptr->find(29);
+//    LCA lca(treap_ptr);
+//    n3 = lca.request(n1, n2);
+//    std::cout<<"("<<n3->key<<"; "<<n3->priority<<")"<<std::endl;
+    RMQ rmq(array);
+    cout<< rmq.request(0, array.size()-1).first;
     cout <<"end"<< endl;
     return 0;
 }

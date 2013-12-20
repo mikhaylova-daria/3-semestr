@@ -32,12 +32,52 @@ public:
     }
 
     Treap (std::vector<K> keys, std::vector<P> priorities, K (*_dec)(K)): dec(_dec) {
+         root = std::shared_ptr<Node>(new Node(keys[0], priorities[0]));
+         std::shared_ptr<Node> last_added = root;
+         root->parent = root;
+         std::shared_ptr<Node> current;
+         for (int i = 1; i < keys.size(); ++i) {
+             current = std::shared_ptr<Node>(new Node(keys[i], priorities[i]));
+             if (!comp(last_added->priority, priorities[i])) {
+                 current->parent = last_added;
+                 last_added->child_r = current;
+             } else {
+                 std::shared_ptr<Node> x = last_added->parent.lock();
+                 while (x != root && comp(x->priority, current->priority)) {
+                     x = x->parent.lock();
+                 }
+                 if (x != root) {
+                     current->child_l = x->child_r;
+                     x->child_r->parent = current;
+                     current->parent = x;
+                     x->child_r = current;
+                 } else {
+                     if (!comp(root->priority, priorities[i])) {
+                         current->child_l = root->child_r;
+                         root->child_r->parent = current;
+                         current->parent = root;
+                         root->child_r = current;
+                     } else {
+                         current->child_l = root;
+                         root -> parent = current;
+                         root = current;
+                         root->parent = root;
+                     }
+                 }
+             }
+             last_added = current;
+         }
+     }
+
+    Treap (std::vector<K> keys, std::vector<P> priorities, K (*_dec)(K), std::vector<std::shared_ptr<Node> >& nodes): dec(_dec) {
         root = std::shared_ptr<Node>(new Node(keys[0], priorities[0]));
+        nodes.push_back(root);
         std::shared_ptr<Node> last_added = root;
         root->parent = root;
         std::shared_ptr<Node> current;
         for (int i = 1; i < keys.size(); ++i) {
             current = std::shared_ptr<Node>(new Node(keys[i], priorities[i]));
+            nodes.push_back(current);
             if (!comp(last_added->priority, priorities[i])) {
                 current->parent = last_added;
                 last_added->child_r = current;
@@ -52,10 +92,17 @@ public:
                     current->parent = x;
                     x->child_r = current;
                 } else {
-                    current->child_l = root;
-                    root -> parent = current;
-                    root = current;
-                    root->parent = root;
+                    if (!comp(root->priority, priorities[i])) {
+                        current->child_l = root->child_r;
+                        root->child_r->parent = current;
+                        current->parent = root;
+                        root->child_r = current;
+                    } else {
+                        current->child_l = root;
+                        root -> parent = current;
+                        root = current;
+                        root->parent = root;
+                    }
                 }
             }
             last_added = current;
