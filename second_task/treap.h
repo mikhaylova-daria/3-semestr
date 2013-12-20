@@ -4,16 +4,21 @@
 class LCA;
 template <typename K, typename P,  typename Compare = std::greater<P>, typename V = int>
 class Treap {
+public:
     struct Node {
+    private:
         std::shared_ptr<Node> child_l;
         std::shared_ptr<Node> child_r;
         std::weak_ptr<Node> parent;
+    public:
         K key;
         P priority;
         V value;
-        Node(K _key, P _priority, V _value = 0): value(_value), key(_key), priority(_priority) {
-        }
+        Node(K _key, P _priority, V _value = 0): value(_value), key(_key), priority(_priority) {}
+        friend class Treap;
+        friend class LCA;
     };
+private:
     Compare comp;
     std::shared_ptr<Node> root = NIL;
     static std::shared_ptr<Node> NIL;
@@ -97,7 +102,7 @@ public:
         root = merge(t1, t3);
     }
 
-    std::shared_ptr<Node> find(K key) {
+    std::shared_ptr<Node> find_with_split(K key) {
         std::shared_ptr<Node> result = NIL;
         std::shared_ptr<Node> t1, t2, t3;
         split(root, dec(key), t1, t2);
@@ -107,6 +112,18 @@ public:
         }
         t1 = merge(t1, t2);
         root = merge(t1, t3);
+        return result;
+    }
+
+    std::shared_ptr<Node> find(K key) {
+        std::shared_ptr<Node> result = root;
+        while (result != NIL && result->key != key) {
+            if (result->key > key) {
+                result = result->child_l;
+            } else {
+                result = result->child_r;
+            }
+        }
         return result;
     }
 

@@ -68,7 +68,14 @@ int main()
 //    //treap.remove(2);
 //    std::cout<<treap.find(15)->priority<<std::endl;
     std::shared_ptr<Treap<int, int> > treap_ptr(new Treap<int, int>(keys, pr, dec));
+    treap_ptr->print();
+    std::shared_ptr<Treap<int, int>::Node> n1, n2, n3;
+
+    n1 = treap_ptr->find(10);
+    n2 = treap_ptr->find(29);
     LCA lca(treap_ptr);
+    n3 = lca.request(n1, n2);
+    std::cout<<"("<<n3->key<<"; "<<n3->priority<<")"<<std::endl;
     cout <<"end"<< endl;
     return 0;
 }
