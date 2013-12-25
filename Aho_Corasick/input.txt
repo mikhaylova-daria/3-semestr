@@ -1,0 +1,10 @@
+8
+abc
+cd
+bc
+bcdc
+cccb
+bcdd
+bbbc
+abcdcbcddbbbcccbbbcccbb
+abcdcbcddbbbcccbbbcccbb 
