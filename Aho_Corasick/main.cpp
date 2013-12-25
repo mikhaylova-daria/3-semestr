@@ -19,7 +19,6 @@ int main()
     for (int i = 0; i < answer.size(); ++i) {
         cout<<answer[i].first<< " " << answer[i].second << std::endl;
     }
-    //cout << "Hello World!" << endl;
     return 0;
 }
 

@@ -8,6 +8,7 @@
 class AhoCorasick {
     struct Node {
         std::unordered_map<char, std::shared_ptr<Node> > sons;
+        std::unordered_map<char, std::weak_ptr<Node> > jumps;
         int pos_pattern_in_dictionary = -1;
         bool is_finish = false;
         std::weak_ptr<Node> suf_link;
@@ -79,23 +80,33 @@ public:
     }
 
     std::weak_ptr<Node> jump(std::weak_ptr<Node> node, char c) {
+        std::unordered_map<char, std::weak_ptr<Node> > ::iterator itr_jumps;
+        itr_jumps = node.lock()->jumps.find(c);
+        if (itr_jumps != node.lock()->jumps.end()) {
+            return itr_jumps->second;
+        }
+        std::weak_ptr<Node> answer;
         std::unordered_map<char, std::shared_ptr<Node> > ::iterator itr;
         itr = node.lock()->sons.find(c);
         if (itr != node.lock()->sons.end()) {
-            return itr->second;
+            answer = itr->second;
         } else {
             if (node.lock() == root) {
-                return root;
+                answer =  root;
+            } else {
+                answer = jump(node.lock()->suf_link, c);
             }
-            return jump(node.lock()->suf_link, c);
         }
+        node.lock()->jumps.insert(std::pair<char, std::weak_ptr<Node> > (c, answer));
+        return answer;
     }
 
     std::weak_ptr<Node> good_jump(std::weak_ptr<Node> node) {
         if (node.lock()->suf_link.lock()->is_finish) {
             return node.lock()->suf_link;
         } else {
-            return good_jump(node.lock()->suf_link);
+            //return good_jump(node.lock()->suf_link);
+            return node.lock()->suf_link.lock()->good_link;
         }
     }
 
