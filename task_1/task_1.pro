@@ -9,5 +9,6 @@ SOURCES += main.cpp
 HEADERS += \
     DSU.h \
     Kruskal.h \
-    graph.h
+    graph.h \
+    Prim.h
 

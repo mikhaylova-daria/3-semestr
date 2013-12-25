@@ -1,6 +1,7 @@
 #include <iostream>
 #include <fstream>
 #include "Kruskal.h"
+#include "Prim.h"
 using namespace std;
 
 int main()
@@ -9,6 +10,7 @@ int main()
     Graph<int, int> g;
     istr>>g;
     Kruskal kr(&g);
+    Prim prim(&g);
     cout << "Hello World!" << endl;
     return 0;
 }

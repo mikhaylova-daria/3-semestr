@@ -17,7 +17,7 @@ class Kruskal {
     Graph<int, int> f;
 
 public:
-    Kruskal(Graph<int, int>* g) {
+    Kruskal(Graph<int, int>* _g): g(_g) {
         std::list<Vetex<int> > vtx = g->get_vetices();
         std::vector<Edge <int> > edg;
         std::list<Vetex<int> >::iterator itr;
@@ -47,7 +47,7 @@ public:
                 f.add_edg(edg[i]);
             }
         }
-        //qsort(edg, , sizeof(Edge<int>), Compare);
+        std::cout<<"Kruskal:"<<std::endl;
         std::cout<<f;
 
     }
