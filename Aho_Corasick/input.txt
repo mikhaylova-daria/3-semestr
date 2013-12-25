@@ -1,7 +1,9 @@
-8
+10
 abc
 cd
 bc
+b
+c
 bcdc
 cccb
 bcdd

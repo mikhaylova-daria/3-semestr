@@ -58,7 +58,7 @@ public:
             std::weak_ptr<Node> node = gray.front();
             gray.pop_front();
             std::unordered_map<char, std::shared_ptr<Node> >:: iterator itr_child;
-            std::cout << node.lock()->term<< ":" <<std::endl;
+//            std::cout << node.lock()->term<< ":" <<std::endl;
 
             for (itr_child = node.lock()->sons.begin(); itr_child != node.lock()->sons.end(); ++itr_child) {
                 if (itr_child->second->parent.lock() == root) {
@@ -68,10 +68,10 @@ public:
                     itr_child->second->suf_link = jump(itr_child->second->parent.lock()->suf_link, itr_child->second->term);
                     itr_child->second->good_link = good_jump(itr_child->second);
                 }
-                std::cout<<itr_child->second->term<<" "<<itr_child->second->parent.lock()->term;
-                std::cout<<"("<<itr_child->second->suf_link.lock()->term<<")";
-                std::cout<<"<"<<itr_child->second->good_link.lock()->term<<">";
-std::cout<<std::endl;
+//                std::cout<<itr_child->second->term<<" "<<itr_child->second->parent.lock()->term;
+//                std::cout<<"("<<itr_child->second->suf_link.lock()->term<<")";
+//                std::cout<<"<"<<itr_child->second->good_link.lock()->term<<">";
+//std::cout<<std::endl;
                 gray.push_back(itr_child->second);
             }
         }
@@ -82,23 +82,19 @@ std::cout<<std::endl;
         std::unordered_map<char, std::shared_ptr<Node> > ::iterator itr;
         itr = node.lock()->sons.find(c);
         if (itr != node.lock()->sons.end()) {
-            std::cout<<"*"<<std::endl;
             return itr->second;
         } else {
             if (node.lock() == root) {
                 return root;
             }
             return jump(node.lock()->suf_link, c);
-            std::cout<<"@"<<std::endl;
         }
     }
 
     std::weak_ptr<Node> good_jump(std::weak_ptr<Node> node) {
         if (node.lock()->suf_link.lock()->is_finish) {
-           // std::cout<<"yes"<<std::endl;
             return node.lock()->suf_link;
         } else {
-           // return node.lock()->suf_link.lock()->good_link;
             return good_jump(node.lock()->suf_link);
         }
     }
@@ -114,9 +110,7 @@ std::cout<<std::endl;
             itr = node.lock()->sons.find(current_char);
             while (itr == node.lock()->sons.end()) {
                 node = node.lock()->suf_link;
-                //write(node);
                 itr = node.lock()->sons.find(current_char);
-//                std::cout<<"!!"<<std::endl;
                 if ((node.lock() == root)
                         && (itr == node.lock()->sons.end())) {
                     istr >> current_char;
@@ -136,7 +130,6 @@ std::cout<<std::endl;
             answer.push_back(std::pair <std::string, unsigned long long>
                          (dictionary[node.lock()->pos_pattern_in_dictionary],
                          pos_in_text - dictionary[node.lock()->pos_pattern_in_dictionary].size()));
-            std::cout<<"new"<<node.lock()->pos_pattern_in_dictionary<<std::endl;
         }
             while (node.lock() != root) {
                 node = node.lock()->good_link;
